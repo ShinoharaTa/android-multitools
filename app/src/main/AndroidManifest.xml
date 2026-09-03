@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      WRITE_SECURE_SETTINGS は signature|privileged。通常のインストールでは付与されないので
+      初回のみ adb shell pm grant で付与する。宣言していないと grant 自体が失敗する。
+    -->
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- SCREEN_OFF_TIMEOUT 用。設定アプリの「システム設定の変更」から許可する appop。 -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+    <!-- Android 11+ のパッケージ可視性。時計アプリの解決に必要。 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SHOW_ALARMS" />
+        </intent>
+        <package android:name="com.sec.android.app.clockpackage" />
+        <package android:name="com.google.android.deskclock" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 1. USB デバッグ ON/OFF -->
+        <service
+            android:name=".UsbDebugTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_usb_debug"
+            android:label="@string/tile_usb_debug"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
+        <!-- 2. 画面タイムアウト切替 -->
+        <service
+            android:name=".ScreenTimeoutTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_screen_timeout"
+            android:label="@string/tile_screen_timeout"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- 3. アラーム画面を開く -->
+        <service
+            android:name=".AlarmTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_alarm"
+            android:label="@string/tile_alarm"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

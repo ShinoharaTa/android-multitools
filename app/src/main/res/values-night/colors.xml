@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="card_bg">#FF1E2126</color>
+    <color name="code_bg">#FF14161A</color>
+    <color name="status_ok">#FF7CD992</color>
+    <color name="status_warn">#FFF0BE5A</color>
+    <color name="status_ng">#FFF2B8B5</color>
+    <color name="text_secondary">#FFB4B8BE</color>
+</resources>

@@ -1,0 +1,68 @@
+# QS ミニツール (android-multitools)
+
+Galaxy / One UI のクイック設定パネルから、普段は設定アプリを開かないと変更できない項目を
+ワンタップで操作するための個人用 Android アプリ。
+
+Play ストア公開は想定していない。自分の端末に APK を直接インストールして使う。
+
+## タイル
+
+| タイル | 動作 | 必要な権限 |
+| --- | --- | --- |
+| USB デバッグ | タップのたびに `Settings.Global.ADB_ENABLED` を ON/OFF。状態はタイルの Active/Inactive とサブタイトル (`ON` / `OFF`) に出る | `WRITE_SECURE_SETTINGS` (adb から一度だけ付与) |
+| 画面タイムアウト | タップのたびに `Settings.System.SCREEN_OFF_TIMEOUT` を 30秒 → 2分 → 10分 → 30分 と巡回。現在値はサブタイトルに出る | `WRITE_SETTINGS` (設定アプリの「システム設定の変更」から許可) |
+| アラーム | 時計アプリのアラーム一覧を開く | なし |
+
+権限が足りないタイルはタップするとセットアップ画面へ飛ぶ。落ちない。
+
+## セットアップ
+
+1. APK をビルドしてインストールする。
+
+   ```bash
+   ./gradlew :app:assembleDebug
+   ```
+
+   ```bash
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+2. アプリを開き、各機能の状態 (利用可能 / 権限不足 / 非対応) を確認する。
+
+3. USB デバッグを使うなら、表示されているコマンドを PC で一度だけ実行する。
+
+   ```bash
+   adb shell pm grant net.shino3.qsmultitools android.permission.WRITE_SECURE_SETTINGS
+   ```
+
+   この権限はアプリを消すまで残る。USB デバッグを OFF にしても権限は残るので、
+   次にタイルをタップすれば ON に戻せる。
+
+4. 画面タイムアウトを使うなら「許可画面を開く」から「システム設定の変更」を許可する。
+   adb でやるなら `adb shell appops set net.shino3.qsmultitools WRITE_SETTINGS allow` でもよい。
+
+5. セットアップ画面下部の「タイルを追加」ボタン、またはクイック設定パネルの編集画面から
+   タイルをパネルに置く。
+
+## 実装メモ
+
+設計判断とその根拠は [docs/DESIGN.md](docs/DESIGN.md) に置いた。
+
+- Kotlin + フレームワーク API のみ。依存ライブラリはゼロ (AndroidX も Compose も入れていない)
+- `minSdk 34` / `targetSdk 36` / `compileSdk 37`
+- タイルは通常モード (`ACTIVE_TILE` を宣言しない)。バインドされるのはパネル表示中だけで常駐しない
+- 設定書き込みは必ず読み戻して反映を確認する。OEM 側で握りつぶされた場合はトーストで知らせる
+
+## 動作確認
+
+Android 15 (API 35) のエミュレータで確認済み。
+
+- 3 タイルの登録・表示・サブタイトル更新
+- 権限なしでのタップ → セットアップ画面へ遷移、クラッシュなし
+- 画面タイムアウトの巡回 (2分 → 10分 → 30分 → 30秒 → …)
+- アラームタイル → 時計アプリのアラーム一覧が開く
+- `requestAddTileService` によるタイル追加ダイアログ
+- 「許可画面を開く」→ システムの「システム設定の変更」画面
+
+USB デバッグの ON/OFF そのものは、切り替えると adb 接続が切れてしまうためエミュレータでは
+実行していない。実機で最初に確認すること。

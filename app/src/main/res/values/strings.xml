@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QS ミニツール</string>
+
+    <string name="tile_usb_debug">USB デバッグ</string>
+    <string name="tile_screen_timeout">画面タイムアウト</string>
+    <string name="tile_alarm">アラーム</string>
+
+    <string name="intro">クイック設定パネルから、普段は設定アプリを開かないと触れない項目をワンタップで操作するためのツールです。各機能の状態を下で確認し、必要なら権限を付与してください。</string>
+
+    <string name="status_available">利用可能</string>
+    <string name="status_needs_permission">権限不足</string>
+    <string name="status_unsupported">この端末では非対応</string>
+    <string name="status_bullet">● %1$s</string>
+    <string name="usb_current">● %1$s  (現在: %2$s)</string>
+    <string name="timeout_current">現在: %1$s</string>
+    <string name="alarm_detail">解決方法: %1$s</string>
+    <string name="alarm_not_found">アラーム一覧を開けるアプリが見つかりませんでした</string>
+
+    <string name="section_usb_debug">1. USB デバッグ ON/OFF</string>
+    <string name="section_screen_timeout">2. 画面タイムアウト切替</string>
+    <string name="section_alarm">3. アラーム画面を開く</string>
+    <string name="section_tiles">クイック設定への追加</string>
+
+    <string name="usb_debug_desc">タイルをタップするたびに USB デバッグを ON/OFF します。WRITE_SECURE_SETTINGS が必要で、この権限は adb からしか付与できません。付与は初回の一度だけで、再インストールするまで有効です。</string>
+    <string name="usb_debug_grant_hint">PC と USB 接続して、下のコマンドを一度だけ実行してください。実行後この画面に戻ると状態が更新されます。</string>
+    <string name="usb_debug_note">USB デバッグを OFF にしても権限はアプリに残るため、次回タイルをタップすれば ON に戻せます。</string>
+
+    <string name="screen_timeout_desc">タイルをタップするたびに、画面消灯までの時間を 30秒 → 2分 → 10分 → 30分 の順で切り替えます。現在値が候補にない場合は、直近の大きい候補へ移動します。</string>
+    <string name="screen_timeout_grant_hint">Android の「システム設定の変更」を許可してください。</string>
+
+    <string name="alarm_desc">タイルをタップすると、標準の時計アプリのアラーム一覧を開きます。まず Android 標準の SHOW_ALARMS Intent を使い、解決できない場合のみ Galaxy 標準時計アプリへフォールバックします。</string>
+
+    <string name="tiles_hint">クイック設定パネルを下ろす → 鉛筆（編集）アイコン → 一覧から「QS ミニツール」の各タイルを長押しして上のパネルへドラッグ、で追加できます。下のボタンからも追加できます。</string>
+
+    <string name="btn_copy">コピー</string>
+    <string name="btn_open_permission">許可画面を開く</string>
+    <string name="btn_test">動作確認</string>
+    <string name="btn_add_tile">タイルを追加: %1$s</string>
+    <string name="btn_refresh">状態を再確認</string>
+
+</resources>
