@@ -99,7 +99,42 @@ shell uid から叩いても同じだった。Samsung 時計の `content://com.s
 Google 時計で試したところ発火直前 (upcoming ウィンドウ内) 以外は無反応だった。
 Samsung の挙動も未確認なので、当てにできる機能としては採用していない。
 
-## 5. プロジェクト構成
+## 5. ウィジェットの可変サイズとテーマ
+
+### 文字サイズ
+
+`AppWidgetManager.getAppWidgetOptions()` が返す寸法から毎回計算する。API 31 以降は
+`OPTION_APPWIDGET_SIZES` に取り得るサイズが並ぶので、その中で最小のものを使う。
+どの向きでも中身が収まるようにするため。無ければ `MIN_WIDTH` / `MIN_HEIGHT` に落とす。
+リサイズ時は `onAppWidgetOptionsChanged` が来るので、そこで描き直す。
+
+高さは「見出し + 時刻 + 日付」を時刻に対する比 (0.42 / 1.0 / 0.46) で積み上げた合計で割り、
+幅は時刻の文字数から必要幅を見積もって割る。小さい方を採用する。
+高さが足りないときは見出し (68dp 未満) → 日付 (46dp 未満) の順に落とす。
+
+1 行が占める高さの係数は 1.45。`includeFontPadding` を切った状態の実測が
+英数字で約 1.17、日本語で約 1.43 だったので、どの文字が来ても溢れないよう日本語側に寄せてある。
+
+### 背景と枠線
+
+枠線の太さを実行時に変えたいので、外枠 (`widgetRoot`) と中身 (`widgetInner`) の 2 枚重ねにして、
+外枠の padding をそのまま枠線として見せる。`RemoteViews.setViewPadding` で太さを、
+`setColorStateList(viewId, "setBackgroundTintList", ...)` (API 31 以降) で色を変える。
+枠線があるときだけ中身の角丸を `system_app_widget_inner_radius` に差し替える。
+
+背景ごとに drawable を用意する方法も Bitmap を生成して敷く方法も採らなかった。
+前者は「背景 5 種 x 枠線 4 段階」で 20 個に増えるし、後者はリサイズのたびに
+実寸の Bitmap を作り直すことになる。tint なら drawable 2 個で足りる。
+
+「システムに合わせる」のときは色を一切指定しない。指定しなければレイアウトの `@color/widget_*` が
+そのまま効き、`values-night` との出し分けはウィジェットを描くホーム画面アプリの設定に従う。
+結果として端末のダークモード切替へ自動で追従する。明示指定したときだけ tint と `setTextColor` を呼ぶ。
+
+設定はウィジェット単位ではなく端末に 1 つ。設定用 Activity (`android:configure`) を置くと
+追加のたびに設定画面を挟むことになるので、セットアップ画面にまとめて、
+変更時に `NextAlarmWidgetProvider.refresh()` で全ウィジェットを描き直している。
+
+## 6. プロジェクト構成
 
 ```
 app/src/main/
@@ -111,6 +146,7 @@ app/src/main/
 │   ├── ScreenTimeoutTileService.kt
 │   ├── AlarmTileService.kt
 │   ├── NextAlarmWidgetProvider.kt  次のアラームウィジェット
+│   ├── WidgetAppearance.kt      ウィジェットのテーマ / 枠線 / 文字サイズ計算
 │   └── MainActivity.kt          セットアップ画面
 └── res/                         XML レイアウト、vector drawable、文字列
 ```

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 見本の下敷き。透明テーマでも輪郭が見えるように中間色にしてある。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF8A8F98" />
+    <corners android:radius="20dp" />
+</shape>

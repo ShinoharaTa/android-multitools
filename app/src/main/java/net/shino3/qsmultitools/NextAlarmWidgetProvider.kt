@@ -7,6 +7,10 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.os.Bundle
+import android.util.SizeF
+import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 
@@ -17,12 +21,25 @@ import android.widget.RemoteViews
  * [AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED] が飛んでくるので、それで描き直す。
  * このブロードキャストは Android 8 以降の暗黙ブロードキャスト制限の例外に入っているため、
  * マニフェスト宣言の receiver で受けられる。常駐は必要ない。
+ *
+ * 文字サイズはウィジェットの実寸から毎回計算するので、リサイズすると追従する。
+ * 見た目 ([WidgetStyle]) はアプリのセットアップ画面から変更する。
  */
 class NextAlarmWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
-        val views = buildViews(context)
-        appWidgetIds.forEach { manager.updateAppWidget(it, views) }
+        appWidgetIds.forEach { render(context, manager, it) }
+    }
+
+    /** リサイズされたとき。寸法が変わったので文字サイズを計算し直す。 */
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        manager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: Bundle?,
+    ) {
+        super.onAppWidgetOptionsChanged(context, manager, appWidgetId, newOptions)
+        render(context, manager, appWidgetId)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -44,24 +61,55 @@ class NextAlarmWidgetProvider : AppWidgetProvider() {
             val ids = runCatching {
                 manager.getAppWidgetIds(ComponentName(context, NextAlarmWidgetProvider::class.java))
             }.getOrNull() ?: return
-            if (ids.isEmpty()) return
-
-            val views = buildViews(context)
-            ids.forEach { runCatching { manager.updateAppWidget(it, views) } }
+            ids.forEach { render(context, manager, it) }
         }
 
-        private fun buildViews(context: Context): RemoteViews {
+        private fun render(context: Context, manager: AppWidgetManager, appWidgetId: Int) {
+            runCatching {
+                manager.updateAppWidget(appWidgetId, buildViews(context, sizeOf(manager, appWidgetId)))
+            }
+        }
+
+        /**
+         * ホーム画面アプリが報告しているウィジェットの寸法 (dp)。
+         *
+         * API 31 以降は OPTION_APPWIDGET_SIZES に取り得るサイズが並ぶので、その中で最小のものを使う。
+         * どの向きでも中身が収まるようにするため。無ければ MIN_WIDTH / MIN_HEIGHT に落とす。
+         */
+        private fun sizeOf(manager: AppWidgetManager, appWidgetId: Int): SizeF {
+            val options = runCatching { manager.getAppWidgetOptions(appWidgetId) }.getOrNull()
+                ?: return DEFAULT_WIDGET_SIZE
+
+            val sizes = runCatching {
+                options.getParcelableArrayList(
+                    AppWidgetManager.OPTION_APPWIDGET_SIZES,
+                    SizeF::class.java,
+                )
+            }.getOrNull()
+            sizes?.filter { it.width > 0f && it.height > 0f }
+                ?.minByOrNull { it.width * it.height }
+                ?.let { return it }
+
+            val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+            val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+            return if (width > 0 && height > 0) {
+                SizeF(width.toFloat(), height.toFloat())
+            } else {
+                DEFAULT_WIDGET_SIZE
+            }
+        }
+
+        private fun buildViews(context: Context, size: SizeF): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_next_alarm)
             val info = NextAlarm.info(context)
 
-            if (info == null) {
-                views.setTextViewText(R.id.widgetTime, context.getString(R.string.widget_no_alarm))
-                views.setViewVisibility(R.id.widgetDate, View.GONE)
-            } else {
-                views.setTextViewText(R.id.widgetTime, NextAlarm.formatTime(context, info.triggerTime))
-                views.setTextViewText(R.id.widgetDate, NextAlarm.formatDay(context, info.triggerTime))
-                views.setViewVisibility(R.id.widgetDate, View.VISIBLE)
-            }
+            val time = info?.let { NextAlarm.formatTime(context, it.triggerTime) }
+                ?: context.getString(R.string.widget_no_alarm)
+            val day = info?.let { NextAlarm.formatDay(context, it.triggerTime) }
+
+            val metrics = metricsFor(size, time.length)
+            applyText(views, time, day, metrics)
+            applyStyle(context, views, WidgetStyle.load(context), metrics)
 
             // タップ先は、そのアラームを持っている時計アプリが用意した PendingIntent が最優先。
             // 無ければ (アラーム未設定など) 通常のアラーム一覧を開く。
@@ -71,6 +119,65 @@ class NextAlarmWidgetProvider : AppWidgetProvider() {
             }
             return views
         }
+
+        private fun applyText(views: RemoteViews, time: String, day: String?, metrics: Metrics) {
+            views.setTextViewText(R.id.widgetTime, time)
+            views.setTextViewTextSize(R.id.widgetTime, TypedValue.COMPLEX_UNIT_SP, metrics.timeSp)
+            views.setTextViewTextSize(R.id.widgetHeader, TypedValue.COMPLEX_UNIT_SP, metrics.headerSp)
+            views.setTextViewTextSize(R.id.widgetDate, TypedValue.COMPLEX_UNIT_SP, metrics.dateSp)
+
+            views.setViewVisibility(
+                R.id.widgetHeader,
+                if (metrics.showHeader) View.VISIBLE else View.GONE,
+            )
+            if (day != null && metrics.showDate) {
+                views.setTextViewText(R.id.widgetDate, day)
+                views.setViewVisibility(R.id.widgetDate, View.VISIBLE)
+            } else {
+                views.setViewVisibility(R.id.widgetDate, View.GONE)
+            }
+        }
+
+        private fun applyStyle(
+            context: Context,
+            views: RemoteViews,
+            style: WidgetStyle,
+            metrics: Metrics,
+        ) {
+            val borderPx = context.dp(style.border.widthDp)
+            views.setViewPadding(R.id.widgetRoot, borderPx, borderPx, borderPx, borderPx)
+
+            // 枠線があるぶん中身は内側なので、角丸を一段小さい drawable に差し替える。
+            views.setInt(
+                R.id.widgetInner,
+                "setBackgroundResource",
+                if (borderPx > 0) R.drawable.bg_widget_inner else R.drawable.bg_widget,
+            )
+
+            val padding = context.dp(metrics.paddingDp)
+            views.setViewPadding(R.id.widgetInner, padding, padding, padding, padding)
+
+            val palette = style.palette
+            if (palette == null) {
+                // SYSTEM。色は指定せず、レイアウトの values / values-night に任せる。
+                // 枠線が 0 のときだけは外枠が縁から覗かないように消しておく。
+                if (borderPx == 0) {
+                    views.tint(R.id.widgetRoot, android.graphics.Color.TRANSPARENT)
+                }
+                return
+            }
+            views.tint(R.id.widgetRoot, if (borderPx > 0) palette.border else android.graphics.Color.TRANSPARENT)
+            views.tint(R.id.widgetInner, palette.background)
+            views.setTextColor(R.id.widgetTime, palette.text)
+            views.setTextColor(R.id.widgetHeader, palette.subText)
+            views.setTextColor(R.id.widgetDate, palette.subText)
+        }
+
+        private fun RemoteViews.tint(viewId: Int, color: Int) =
+            setColorStateList(viewId, "setBackgroundTintList", ColorStateList.valueOf(color))
+
+        private fun Context.dp(value: Float): Int =
+            (value * resources.displayMetrics.density).toInt()
 
         private fun alarmListIntent(context: Context): PendingIntent? {
             val intent = Alarms.resolve(context)?.intent ?: return null

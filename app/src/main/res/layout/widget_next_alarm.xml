@@ -1,37 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  外枠 (widgetRoot) と中身 (widgetInner) の 2 枚重ね。
+  外枠の padding をそのまま枠線の太さとして使うので、太さを実行時に変えられる。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widgetRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_widget"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="12dp">
+    android:background="@drawable/bg_widget_border">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_header"
-        android:textColor="@color/widget_text_sub"
-        android:textSize="11sp" />
+    <LinearLayout
+        android:id="@+id/widgetInner"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_widget"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <TextView
-        android:id="@+id/widgetTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:text="@string/widget_preview_time"
-        android:textColor="@color/widget_text"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        />
+        <TextView
+            android:id="@+id/widgetHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_header"
+            android:textColor="@color/widget_text_sub"
+            android:textSize="11sp" />
 
-    <TextView
-        android:id="@+id/widgetDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:text="@string/widget_preview_day"
-        android:textColor="@color/widget_text_sub"
-        android:textSize="12sp" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/widgetTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_preview_time"
+            android:textColor="@color/widget_text"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widgetDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_preview_day"
+            android:textColor="@color/widget_text_sub"
+            android:textSize="12sp" />
+    </LinearLayout>
+</FrameLayout>

@@ -3,6 +3,7 @@ package net.shino3.qsmultitools
 import android.app.Activity
 import android.app.StatusBarManager
 import android.appwidget.AppWidgetManager
+import android.content.res.ColorStateList
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -12,8 +13,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.service.quicksettings.TileService
+import android.util.SizeF
+import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 
@@ -38,6 +45,12 @@ class MainActivity : Activity() {
     private lateinit var widgetStatus: TextView
     private lateinit var widgetCurrent: TextView
 
+    private lateinit var previewRoot: ViewGroup
+    private lateinit var previewInner: ViewGroup
+    private lateinit var previewHeader: TextView
+    private lateinit var previewTime: TextView
+    private lateinit var previewDate: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -53,6 +66,11 @@ class MainActivity : Activity() {
         alarmDetail = findViewById(R.id.alarmDetail)
         widgetStatus = findViewById(R.id.widgetStatus)
         widgetCurrent = findViewById(R.id.widgetCurrent)
+        previewRoot = findViewById(R.id.widgetRoot)
+        previewInner = findViewById(R.id.widgetInner)
+        previewHeader = findViewById(R.id.widgetHeader)
+        previewTime = findViewById(R.id.widgetTime)
+        previewDate = findViewById(R.id.widgetDate)
 
         usbGrantCommand.text = UsbDebug.grantCommand(this)
         timeoutAdbCommand.text = ScreenTimeout.appOpsCommand(this)
@@ -69,6 +87,7 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.btnRefresh).setOnClickListener { refresh() }
 
         setUpAddTileButtons()
+        setUpStyleSpinners()
     }
 
     override fun onResume() {
@@ -113,6 +132,7 @@ class MainActivity : Activity() {
                     NextAlarm.formatTime(this, next.triggerTime),
             )
         }
+        updatePreview()
     }
 
     private fun render(view: TextView, status: FeatureStatus) {
@@ -156,6 +176,95 @@ class MainActivity : Activity() {
     } catch (e: Exception) {
         false
     }
+
+    // ---- ウィジェットの見た目 -------------------------------------------
+
+    private fun setUpStyleSpinners() {
+        val style = WidgetStyle.load(this)
+        bindSpinner(R.id.spinnerTheme, WidgetTheme.entries, style.theme) { theme ->
+            WidgetStyle.load(this).copy(theme = theme)
+        }
+        bindSpinner(R.id.spinnerBorder, WidgetBorder.entries, style.border) { border ->
+            WidgetStyle.load(this).copy(border = border)
+        }
+    }
+
+    private fun <T : Enum<T>> bindSpinner(
+        spinnerId: Int,
+        values: List<T>,
+        selected: T,
+        toStyle: (T) -> WidgetStyle,
+    ) {
+        val labels = values.map { getString(labelOf(it)) }
+        findViewById<Spinner>(spinnerId).apply {
+            adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, labels)
+                .apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            setSelection(values.indexOf(selected), false)
+            // リスナーは初期選択を入れ終わってから付ける。付けてから setSelection すると
+            // 画面を開いた瞬間に保存が走ってしまう。
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    WidgetStyle.save(this@MainActivity, toStyle(values[position]))
+                    updatePreview()
+                    NextAlarmWidgetProvider.refresh(this@MainActivity)
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+            }
+        }
+    }
+
+    private fun labelOf(value: Enum<*>): Int = when (value) {
+        is WidgetTheme -> value.labelRes
+        is WidgetBorder -> value.labelRes
+        else -> error("未対応の選択肢: ${'$'}value")
+    }
+
+    /**
+     * 見本にウィジェットと同じ計算を当てる。
+     * 実物と同じ [metricsFor] を使うので、行が省かれる挙動もそのまま見える。
+     */
+    private fun updatePreview() {
+        val style = WidgetStyle.load(this)
+        val info = NextAlarm.info(this)
+        val time = info?.let { NextAlarm.formatTime(this, it.triggerTime) }
+            ?: getString(R.string.widget_no_alarm)
+        val day = info?.let { NextAlarm.formatDay(this, it.triggerTime) }
+        val metrics = metricsFor(PREVIEW_SIZE, time.length)
+
+        previewTime.text = time
+        previewTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, metrics.timeSp)
+        previewHeader.setTextSize(TypedValue.COMPLEX_UNIT_SP, metrics.headerSp)
+        previewDate.setTextSize(TypedValue.COMPLEX_UNIT_SP, metrics.dateSp)
+        previewHeader.visibility = if (metrics.showHeader) View.VISIBLE else View.GONE
+        if (day != null && metrics.showDate) {
+            previewDate.text = day
+            previewDate.visibility = View.VISIBLE
+        } else {
+            previewDate.visibility = View.GONE
+        }
+
+        val border = dp(style.border.widthDp)
+        previewRoot.setPadding(border, border, border, border)
+        previewInner.setBackgroundResource(
+            if (border > 0) R.drawable.bg_widget_inner else R.drawable.bg_widget,
+        )
+        val padding = dp(metrics.paddingDp)
+        previewInner.setPadding(padding, padding, padding, padding)
+
+        val palette = style.palette
+        previewRoot.backgroundTintList = when {
+            border == 0 -> ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
+            palette == null -> null
+            else -> ColorStateList.valueOf(palette.border)
+        }
+        previewInner.backgroundTintList = palette?.let { ColorStateList.valueOf(it.background) }
+        previewTime.setTextColor(palette?.text ?: getColor(R.color.widget_text))
+        previewHeader.setTextColor(palette?.subText ?: getColor(R.color.widget_text_sub))
+        previewDate.setTextColor(palette?.subText ?: getColor(R.color.widget_text_sub))
+    }
+
+    private fun dp(value: Float): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun requestPinWidget() {
         val manager = getSystemService(AppWidgetManager::class.java)
@@ -213,5 +322,10 @@ class MainActivity : Activity() {
 
     private fun toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        /** 見本の枠の大きさ。レイアウト側の 170dp x 76dp と合わせてある。 */
+        private val PREVIEW_SIZE = SizeF(170f, 76f)
     }
 }

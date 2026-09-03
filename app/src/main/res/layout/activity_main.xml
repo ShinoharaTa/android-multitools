@@ -155,6 +155,44 @@
                 style="@style/Body"
                 android:text="@string/widget_hint" />
 
+            <FrameLayout
+                android:layout_width="170dp"
+                android:layout_height="76dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_preview_backdrop">
+
+                <include layout="@layout/widget_next_alarm" />
+            </FrameLayout>
+
+            <TextView
+                style="@style/Body"
+                android:layout_marginTop="6dp"
+                android:gravity="center_horizontal"
+                android:text="@string/widget_preview_label" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/label_theme" />
+
+            <Spinner
+                android:id="@+id/spinnerTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/label_border" />
+
+            <Spinner
+                android:id="@+id/spinnerBorder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp" />
+
             <Button
                 android:id="@+id/btnAddWidget"
                 android:layout_width="match_parent"

@@ -10,4 +10,5 @@
     <color name="widget_bg">#FFFDFDFD</color>
     <color name="widget_text">#FF1B1D21</color>
     <color name="widget_text_sub">#FF5F6368</color>
+    <color name="widget_border">#33000000</color>
 </resources>

@@ -9,4 +9,5 @@
     <color name="widget_bg">#FF1B1D21</color>
     <color name="widget_text">#FFF1F3F5</color>
     <color name="widget_text_sub">#FFB4B8BE</color>
+    <color name="widget_border">#33FFFFFF</color>
 </resources>

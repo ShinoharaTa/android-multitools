@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 枠線なしのときの中身の背景。外周の角丸に合わせる。 -->
+<!-- 枠線ありのときの中身の背景。枠のぶん内側なので角丸を一段小さくする。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/widget_bg" />
-    <corners android:radius="@android:dimen/system_app_widget_background_radius" />
+    <corners android:radius="@android:dimen/system_app_widget_inner_radius" />
 </shape>
