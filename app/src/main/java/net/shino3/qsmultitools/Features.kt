@@ -1,12 +1,20 @@
 package net.shino3.qsmultitools
 
 import android.Manifest
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.provider.AlarmClock
 import android.provider.Settings
+import android.text.format.DateFormat
+import android.text.format.DateUtils
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
+import java.util.Date
 
 /** 各機能がいま使えるかどうか。セットアップ画面とタイルの両方でこれを見る。 */
 enum class FeatureStatus {
@@ -146,4 +154,38 @@ object Alarms {
     /** resolveActivity(Intent, Int) は API 33 で deprecated。新しい ResolveInfoFlags 版を使う。 */
     private fun resolve(pm: PackageManager, intent: Intent): ResolveInfo? =
         pm.resolveActivity(intent, PackageManager.ResolveInfoFlags.of(0L))
+}
+
+/**
+ * 次に鳴るアラーム。
+ *
+ * [AlarmManager.getNextAlarmClock] は「どのアプリが `setAlarmClock()` で立てたか」に関係なく
+ * 端末全体の次の 1 件を返す。権限は要らない。Galaxy 標準の時計アプリもこの経路に乗るので、
+ * Samsung 固有の ContentProvider を覗かなくても次のアラームだけは正確に取れる。
+ *
+ * 逆に、ここから取れるのは「次の 1 件の時刻」と「その時計アプリを開く PendingIntent」だけ。
+ * アラームの一覧や個別の ON/OFF を扱う公開 API は存在しない (docs/DESIGN.md 参照)。
+ */
+object NextAlarm {
+
+    fun info(context: Context): AlarmManager.AlarmClockInfo? =
+        runCatching { context.getSystemService(AlarmManager::class.java)?.nextAlarmClock }.getOrNull()
+
+    /** 端末の 12/24 時間表示設定に従って時刻を整形する。 */
+    fun formatTime(context: Context, triggerTime: Long): String =
+        DateFormat.getTimeFormat(context).format(Date(triggerTime))
+
+    /** 今日 / 明日 / それ以外は曜日つきの日付。日をまたいでも表示が古くならないようにする。 */
+    fun formatDay(context: Context, triggerTime: Long): String {
+        val target = Instant.ofEpochMilli(triggerTime).atZone(ZoneId.systemDefault()).toLocalDate()
+        return when (ChronoUnit.DAYS.between(LocalDate.now(), target)) {
+            0L -> context.getString(R.string.day_today)
+            1L -> context.getString(R.string.day_tomorrow)
+            else -> DateUtils.formatDateTime(
+                context,
+                triggerTime,
+                DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_ABBREV_ALL,
+            )
+        }
+    }
 }

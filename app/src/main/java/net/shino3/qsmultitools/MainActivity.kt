@@ -2,6 +2,7 @@ package net.shino3.qsmultitools
 
 import android.app.Activity
 import android.app.StatusBarManager
+import android.appwidget.AppWidgetManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -34,6 +35,9 @@ class MainActivity : Activity() {
     private lateinit var alarmStatus: TextView
     private lateinit var alarmDetail: TextView
 
+    private lateinit var widgetStatus: TextView
+    private lateinit var widgetCurrent: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -47,6 +51,8 @@ class MainActivity : Activity() {
         timeoutAdbCommand = findViewById(R.id.timeoutAdbCommand)
         alarmStatus = findViewById(R.id.alarmStatus)
         alarmDetail = findViewById(R.id.alarmDetail)
+        widgetStatus = findViewById(R.id.widgetStatus)
+        widgetCurrent = findViewById(R.id.widgetCurrent)
 
         usbGrantCommand.text = UsbDebug.grantCommand(this)
         timeoutAdbCommand.text = ScreenTimeout.appOpsCommand(this)
@@ -59,6 +65,7 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.btnOpenWriteSettings).setOnClickListener { openWriteSettings() }
         findViewById<Button>(R.id.btnTestAlarm).setOnClickListener { openAlarms() }
+        findViewById<Button>(R.id.btnAddWidget).setOnClickListener { requestPinWidget() }
         findViewById<Button>(R.id.btnRefresh).setOnClickListener { refresh() }
 
         setUpAddTileButtons()
@@ -93,6 +100,19 @@ class MainActivity : Activity() {
         render(alarmStatus, if (alarm != null) FeatureStatus.AVAILABLE else FeatureStatus.UNSUPPORTED)
         alarmDetail.text = alarm?.let { getString(R.string.alarm_detail, it.method) }
             ?: getString(R.string.alarm_not_found)
+
+        // ウィジェットは権限を使わないので、常に利用可能。
+        render(widgetStatus, FeatureStatus.AVAILABLE)
+        val next = NextAlarm.info(this)
+        widgetCurrent.text = if (next == null) {
+            getString(R.string.widget_current_none)
+        } else {
+            getString(
+                R.string.widget_current,
+                "${NextAlarm.formatDay(this, next.triggerTime)} " +
+                    NextAlarm.formatTime(this, next.triggerTime),
+            )
+        }
     }
 
     private fun render(view: TextView, status: FeatureStatus) {
@@ -135,6 +155,17 @@ class MainActivity : Activity() {
         true
     } catch (e: Exception) {
         false
+    }
+
+    private fun requestPinWidget() {
+        val manager = getSystemService(AppWidgetManager::class.java)
+        val provider = ComponentName(this, NextAlarmWidgetProvider::class.java)
+        val requested = manager != null &&
+            manager.isRequestPinAppWidgetSupported &&
+            runCatching { manager.requestPinAppWidget(provider, null, null) }.getOrDefault(false)
+        if (!requested) {
+            toast(getString(R.string.widget_pin_unsupported))
+        }
     }
 
     // ---- クイック設定への追加 -------------------------------------------

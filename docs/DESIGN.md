@@ -66,7 +66,40 @@ Android 11 以降のパッケージ可視性があるので、解決可否を判
   `Tile.setSubtitle` (API 29 から) と Active/Inactive の色で見せる。
   `setStateDescription` と `contentDescription` にも同じ内容を入れてある。
 
-## 4. プロジェクト構成
+## 4. アラーム一覧ウィジェットを作らなかった理由
+
+「設定済みアラームの一覧を出して個別に ON/OFF する」ウィジェットは、公開 API では作れない。
+調べた結果は次のとおり。
+
+**時計アプリのアラーム DB は外から読めない。**
+Google 時計の `com.google.android.deskclock.provider` は存在するが、外部からの query に対して
+明示的に `UnsupportedOperationException: No external queries` を投げる。アプリより権限の強い
+shell uid から叩いても同じだった。Samsung 時計の `content://com.sec.android.app.clockpackage/alarm`
+は古い端末で読めた時期があるが非公開で、One UI の更新で壊れる類のもの。仮に読めても
+書き込み (ON/OFF) はまず通らない。
+
+**標準 Intent にも該当するものが無い。**
+`android.provider.AlarmClock` にあるのは `SET_ALARM` (新規作成) / `SHOW_ALARMS` (一覧を開く) /
+`DISMISS_ALARM` / `SNOOZE_ALARM` / `SET_TIMER` / `SHOW_TIMERS` / `DISMISS_TIMER` だけ。
+一覧の取得も、既存アラームの有効・無効の切り替えも用意されていない。
+
+**取れるのは「次の 1 件」だけ。**
+`AlarmManager.getNextAlarmClock()` は `setAlarmClock()` で立てられたアラームなら
+どのアプリのものでも返す。権限は要らない。Galaxy 標準の時計アプリもこの経路に乗る。
+返ってくるのは発火時刻と、その時計アプリが用意した `showIntent` (アラーム画面を開く PendingIntent)。
+
+なので、ウィジェットは「次のアラームの時刻を出して、タップでその時計アプリのアラーム画面へ送る」
+という形にした。一覧とトグルは端末の時計アプリ側に任せる。
+
+更新契機は `AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED`。これは Android 8 以降の
+暗黙ブロードキャスト制限の**例外リストに入っている**ので、マニフェスト宣言の receiver で受けられる。
+`updatePeriodMillis` は 0 にしてあり、定期更新も常駐もしない。
+
+`ACTION_DISMISS_ALARM` + `SEARCH_MODE=next` で「次の 1 回だけスキップ」は理屈の上では可能だが、
+Google 時計で試したところ発火直前 (upcoming ウィンドウ内) 以外は無反応だった。
+Samsung の挙動も未確認なので、当てにできる機能としては採用していない。
+
+## 5. プロジェクト構成
 
 ```
 app/src/main/
@@ -77,6 +110,7 @@ app/src/main/
 │   ├── UsbDebugTileService.kt
 │   ├── ScreenTimeoutTileService.kt
 │   ├── AlarmTileService.kt
+│   ├── NextAlarmWidgetProvider.kt  次のアラームウィジェット
 │   └── MainActivity.kt          セットアップ画面
 └── res/                         XML レイアウト、vector drawable、文字列
 ```

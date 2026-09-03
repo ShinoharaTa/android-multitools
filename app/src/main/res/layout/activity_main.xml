@@ -132,6 +132,36 @@
                 android:text="@string/btn_test" />
         </LinearLayout>
 
+        <!-- ホーム画面ウィジェット -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_widget" />
+
+            <TextView
+                android:id="@+id/widgetStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                android:id="@+id/widgetCurrent"
+                style="@style/Body" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/widget_desc" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/widget_hint" />
+
+            <Button
+                android:id="@+id/btnAddWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_widget" />
+        </LinearLayout>
+
         <!-- タイル追加 -->
         <LinearLayout style="@style/Card">
 

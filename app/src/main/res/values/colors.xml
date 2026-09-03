@@ -7,4 +7,7 @@
     <color name="status_warn">#FFB26A00</color>
     <color name="status_ng">#FFB3261E</color>
     <color name="text_secondary">#FF5F6368</color>
+    <color name="widget_bg">#FFFDFDFD</color>
+    <color name="widget_text">#FF1B1D21</color>
+    <color name="widget_text_sub">#FF5F6368</color>
 </resources>

@@ -6,4 +6,7 @@
     <color name="status_warn">#FFF0BE5A</color>
     <color name="status_ng">#FFF2B8B5</color>
     <color name="text_secondary">#FFB4B8BE</color>
+    <color name="widget_bg">#FF1B1D21</color>
+    <color name="widget_text">#FFF1F3F5</color>
+    <color name="widget_text_sub">#FFB4B8BE</color>
 </resources>
