@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 「次のアラーム」ウィジェットと同じ 2 枚重ね。外枠の padding が枠線になる。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/shortcutRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget_border">
+
+    <LinearLayout
+        android:id="@+id/shortcutInner"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_widget"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <ImageView
+            android:id="@+id/shortcutIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/shortcut_icon_description"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_shortcut_unset" />
+
+        <TextView
+            android:id="@+id/shortcutLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center_horizontal"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:paddingTop="2dp"
+            android:text="@string/shortcut_unset"
+            android:textColor="@color/widget_text"
+            android:textSize="12sp" />
+    </LinearLayout>
+</FrameLayout>

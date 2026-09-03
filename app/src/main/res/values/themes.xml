@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.DayNight" />
+    <!--
+      アクションバーは使わない。targetSdk 35 以降の edge-to-edge では
+      DeviceDefault のアクションバーが本文に重なってしまうため、
+      見出しは画面の中に自前で置き、inset は padForSystemBars() で処理する。
+    -->
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.DayNight">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
 </resources>

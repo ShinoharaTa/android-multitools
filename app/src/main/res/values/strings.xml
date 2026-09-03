@@ -22,6 +22,7 @@
     <string name="section_alarm">3. アラーム画面を開く</string>
     <string name="section_tiles">クイック設定への追加</string>
     <string name="section_widget">ホーム画面ウィジェット</string>
+    <string name="section_shortcut">アプリのショートカット</string>
 
     <string name="usb_debug_desc">タイルをタップするたびに USB デバッグを ON/OFF します。WRITE_SECURE_SETTINGS が必要で、この権限は adb からしか付与できません。付与は初回の一度だけで、再インストールするまで有効です。</string>
     <string name="usb_debug_grant_hint">PC と USB 接続して、下のコマンドを一度だけ実行してください。実行後この画面に戻ると状態が更新されます。</string>
@@ -45,6 +46,19 @@
     <string name="widget_current_none">次のアラーム: 設定されていません</string>
     <string name="widget_hint">文字サイズはウィジェットの幅と高さから自動で決まります。小さくすると見出しや日付を省いて時刻だけにします。アラームを変更すると自動で追いつき、定期更新も常駐もしません。一覧表示や個別の ON/OFF は Android の公開 API では実現できないため、次の 1 件のみを表示します。</string>
     <string name="btn_add_widget">ウィジェットを追加</string>
+    <string name="btn_add_shortcut">ショートカットを追加</string>
+    <string name="shortcut_widget">アプリのショートカット</string>
+    <string name="shortcut_description">選んだアプリを開くショートカット。アイコンはそのアプリのものを使います。</string>
+    <string name="shortcut_desc">YouTube のようなアプリを 1 タップで開くためのウィジェットです。アイコンとラベルは対象アプリのものをそのまま使い、ウィジェットの大きさに合わせて拡大縮小します。開くリンクを指定すればディープリンクも開けます。</string>
+    <string name="shortcut_hint">追加すると設定画面が開くので、そこでアプリを選びます。置いたあとでもウィジェットを長押しして設定し直せます。見た目はショートカットごとに決められます。</string>
+    <string name="shortcut_unset">未設定</string>
+    <string name="shortcut_icon_description">アプリのアイコン</string>
+    <string name="config_desc">タップしたときに開くアプリを選びます。アイコンとラベルはそのアプリのものを使います。</string>
+    <string name="config_pick">アプリを選ぶ</string>
+    <string name="config_loading">アプリを読み込んでいます…</string>
+    <string name="label_link">開くリンク (任意)</string>
+    <string name="hint_link">https://www.youtube.com/@example</string>
+    <string name="hint_search">アプリ名で絞り込み</string>
     <string name="widget_preview_label">見本 (実際のウィジェットにも即座に反映されます)</string>
     <string name="label_theme">背景テーマ</string>
     <string name="label_border">枠線の太さ</string>

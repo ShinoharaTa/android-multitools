@@ -13,10 +13,18 @@
     <!-- SCREEN_OFF_TIMEOUT 用。設定アプリの「システム設定の変更」から許可する appop。 -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
-    <!-- Android 11+ のパッケージ可視性。時計アプリの解決に必要。 -->
+    <!--
+      Android 11+ のパッケージ可視性。時計アプリの解決と、ショートカットに置くアプリの
+      一覧取得に必要。MAIN + LAUNCHER の intent を書けばランチャーに出るアプリが見えるので、
+      制限付きの QUERY_ALL_PACKAGES は使わない。
+    -->
     <queries>
         <intent>
             <action android:name="android.intent.action.SHOW_ALARMS" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
         </intent>
         <package android:name="com.sec.android.app.clockpackage" />
         <package android:name="com.google.android.deskclock" />
@@ -77,6 +85,34 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name=".AppShortcutConfigActivity"
+            android:exported="true"
+            android:label="@string/shortcut_widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- アプリを開くショートカット。アプリの入れ替えにも追従させる。 -->
+        <receiver
+            android:name=".AppShortcutWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_app_shortcut_info" />
+        </receiver>
 
         <!-- 次のアラームウィジェット。NEXT_ALARM_CLOCK_CHANGED は Android 8 以降の
              暗黙ブロードキャスト制限の例外なので、マニフェスト宣言の receiver で受けられる。 -->

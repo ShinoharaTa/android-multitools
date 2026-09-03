@@ -1,8 +1,10 @@
 package net.shino3.qsmultitools
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.util.SizeF
+import android.widget.RemoteViews
 
 /**
  * ウィジェットの背景テーマ。
@@ -118,3 +120,46 @@ private const val DATE_RATIO = 0.46f
 // 英数字は約 1.17、日本語は約 1.43 だった。どの文字が来ても溢れないよう日本語側に寄せてある。
 private const val LINE_HEIGHT = 1.45f
 private const val CHAR_WIDTH_RATIO = 0.58f
+
+/**
+ * 外枠 (`root`) と中身 (`inner`) の 2 枚重ねに背景テーマと枠線を当てる。
+ *
+ * 枠線の太さは外枠の padding として出す。色は tint で変える。
+ * SYSTEM のときは色を指定しないので、レイアウトの `@color/widget_*` が
+ * ホーム画面アプリ側の light / dark 設定に従って解決される。
+ * 文字色はウィジェットごとに対象が違うので、ここでは触らずに呼び出し側で当てる。
+ */
+fun RemoteViews.applyFrame(
+    context: Context,
+    style: WidgetStyle,
+    rootId: Int,
+    innerId: Int,
+    contentPaddingDp: Float,
+) {
+    val borderPx = context.toPx(style.border.widthDp)
+    setViewPadding(rootId, borderPx, borderPx, borderPx, borderPx)
+
+    // 枠線があるぶん中身は内側なので、角丸を一段小さい drawable に差し替える。
+    setInt(
+        innerId,
+        "setBackgroundResource",
+        if (borderPx > 0) R.drawable.bg_widget_inner else R.drawable.bg_widget,
+    )
+
+    val padding = context.toPx(contentPaddingDp)
+    setViewPadding(innerId, padding, padding, padding, padding)
+
+    val palette = style.palette
+    if (palette == null) {
+        // 枠線が 0 のときだけは外枠が縁から覗かないように消しておく。
+        if (borderPx == 0) tintBackground(rootId, Color.TRANSPARENT)
+        return
+    }
+    tintBackground(rootId, if (borderPx > 0) palette.border else Color.TRANSPARENT)
+    tintBackground(innerId, palette.background)
+}
+
+fun RemoteViews.tintBackground(viewId: Int, color: Int) =
+    setColorStateList(viewId, "setBackgroundTintList", ColorStateList.valueOf(color))
+
+fun Context.toPx(dp: Float): Int = (dp * resources.displayMetrics.density).toInt()

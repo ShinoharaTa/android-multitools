@@ -45,6 +45,8 @@ class MainActivity : Activity() {
     private lateinit var widgetStatus: TextView
     private lateinit var widgetCurrent: TextView
 
+    private lateinit var shortcutStatus: TextView
+
     private lateinit var previewRoot: ViewGroup
     private lateinit var previewInner: ViewGroup
     private lateinit var previewHeader: TextView
@@ -54,6 +56,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        findViewById<View>(R.id.mainScroll).padForSystemBars()
 
         usbStatus = findViewById(R.id.usbStatus)
         usbGrantBlock = findViewById(R.id.usbGrantBlock)
@@ -66,6 +69,7 @@ class MainActivity : Activity() {
         alarmDetail = findViewById(R.id.alarmDetail)
         widgetStatus = findViewById(R.id.widgetStatus)
         widgetCurrent = findViewById(R.id.widgetCurrent)
+        shortcutStatus = findViewById(R.id.shortcutStatus)
         previewRoot = findViewById(R.id.widgetRoot)
         previewInner = findViewById(R.id.widgetInner)
         previewHeader = findViewById(R.id.widgetHeader)
@@ -83,7 +87,12 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.btnOpenWriteSettings).setOnClickListener { openWriteSettings() }
         findViewById<Button>(R.id.btnTestAlarm).setOnClickListener { openAlarms() }
-        findViewById<Button>(R.id.btnAddWidget).setOnClickListener { requestPinWidget() }
+        findViewById<Button>(R.id.btnAddWidget).setOnClickListener {
+            requestPinWidget(NextAlarmWidgetProvider::class.java)
+        }
+        findViewById<Button>(R.id.btnAddShortcut).setOnClickListener {
+            requestPinWidget(AppShortcutWidgetProvider::class.java)
+        }
         findViewById<Button>(R.id.btnRefresh).setOnClickListener { refresh() }
 
         setUpAddTileButtons()
@@ -133,6 +142,9 @@ class MainActivity : Activity() {
             )
         }
         updatePreview()
+
+        // ショートカットも権限を使わないので、常に利用可能。
+        render(shortcutStatus, FeatureStatus.AVAILABLE)
     }
 
     private fun render(view: TextView, status: FeatureStatus) {
@@ -266,9 +278,9 @@ class MainActivity : Activity() {
 
     private fun dp(value: Float): Int = (value * resources.displayMetrics.density).toInt()
 
-    private fun requestPinWidget() {
+    private fun requestPinWidget(providerClass: Class<*>) {
         val manager = getSystemService(AppWidgetManager::class.java)
-        val provider = ComponentName(this, NextAlarmWidgetProvider::class.java)
+        val provider = ComponentName(this, providerClass)
         val requested = manager != null &&
             manager.isRequestPinAppWidgetSupported &&
             runCatching { manager.requestPinAppWidget(provider, null, null) }.getOrDefault(false)

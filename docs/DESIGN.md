@@ -134,7 +134,48 @@ Samsung の挙動も未確認なので、当てにできる機能としては採
 追加のたびに設定画面を挟むことになるので、セットアップ画面にまとめて、
 変更時に `NextAlarmWidgetProvider.refresh()` で全ウィジェットを描き直している。
 
-## 6. プロジェクト構成
+## 6. アプリのショートカット
+
+### アプリ一覧とアイコン
+
+MAIN + LAUNCHER の `queryIntentActivities` で取る。Android 11 以降のパッケージ可視性があるので、
+マニフェストの `<queries>` に同じ intent を書いてある。これでランチャーに出るアプリが見えるようになり、
+Play の制限対象である `QUERY_ALL_PACKAGES` を使わずに済む。
+
+アイコンは `getActivityIcon()` の Drawable。RemoteViews には Drawable を渡せないので Bitmap に焼く。
+アダプティブアイコンは全面が塗られていて、そのまま描くと四角いままになるので、
+ランチャーと同じように角を丸めてから描いている。Bitmap は binder 越しに渡るため
+320px (ARGB で約 400KB) を上限にして、それを超える表示サイズでは ImageView 側で拡大させる。
+
+### 設定の持ち方
+
+ショートカットは「どのアプリを開くか」がウィジェットごとに違うので、
+`android:configure` で設定用 Activity を持たせ、設定は appWidgetId をキーにして保存する。
+`widgetFeatures="reconfigurable"` を付けてあるので、置いたあとでも開き直せる。
+`onDeleted` で設定も消す。
+
+見た目もショートカットごとに持たせた。既定は「透明 + 枠線なし」。アプリのアイコンを
+ホーム画面にそのまま置きたいことが多く、カード背景が付くと浮くため。
+「次のアラーム」ウィジェットの見た目が端末に 1 つなのは、そちらは複数置く理由が薄いからで、
+使い分けている。
+
+`requestPinAppWidget` で追加した場合、ホーム画面アプリによっては設定 Activity が
+自動で開かない。そのため未設定のウィジェットは「未設定」と表示し、
+タップすると設定画面に飛ぶようにしてある。
+
+### ディープリンク
+
+URI が指定されていれば `ACTION_VIEW` + `setPackage(対象アプリ)` を試し、
+そのアプリで解決できなければパッケージ指定を外して端末の既定に任せ、
+それも駄目なら普通にアプリを起動する、の 3 段構え。
+
+ここで注意したのは、`setPackage` 付きの Intent が対象アプリに届いたあと、
+アプリ側が「この URL は自分で扱わない」と判断してブラウザに投げ直すことがある点。
+エミュレータで YouTube の `/feed/subscriptions` を試したときがまさにそれで、
+起動ログの uid から、こちらの Intent は YouTube に届いていて、
+Chrome を開いたのは YouTube 自身だと確認できた。こちらでは制御できない。
+
+## 7. プロジェクト構成
 
 ```
 app/src/main/
@@ -147,6 +188,10 @@ app/src/main/
 │   ├── AlarmTileService.kt
 │   ├── NextAlarmWidgetProvider.kt  次のアラームウィジェット
 │   ├── WidgetAppearance.kt      ウィジェットのテーマ / 枠線 / 文字サイズ計算
+│   ├── AppShortcut.kt           ショートカットの設定 / アプリ一覧 / アイコン
+│   ├── AppShortcutWidgetProvider.kt
+│   ├── AppShortcutConfigActivity.kt  ショートカットの設定画面
+│   ├── Ui.kt                    edge-to-edge の inset 処理
 │   └── MainActivity.kt          セットアップ画面
 └── res/                         XML レイアウト、vector drawable、文字列
 ```
@@ -157,5 +202,8 @@ app/src/main/
   AndroidX も Compose も入れない
 - 状態判定のロジックは `Features.kt` に集約し、タイルとセットアップ画面の両方が同じものを見る
 - 権限や端末差で失敗しうる箇所は全て `runCatching` で包み、アプリが落ちないようにする
+- targetSdk 35 以降は edge-to-edge が強制される。DeviceDefault のアクションバーは本文に
+  重なってしまうので、アクションバーは使わず、見出しは画面の中に置いて
+  `padForSystemBars()` で inset を padding にする
 - 設定を書いたら必ず読み戻して確認する
 - タイルは通常モード。バインドされるのはクイック設定パネルの表示中だけで常駐しない

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/configRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        style="@style/ScreenTitle"
+        android:text="@string/shortcut_widget" />
+
+    <TextView
+        style="@style/Body"
+        android:text="@string/config_desc" />
+
+    <TextView
+        style="@style/Body"
+        android:paddingBottom="2dp"
+        android:text="@string/label_theme" />
+
+    <Spinner
+        android:id="@+id/shortcutTheme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        style="@style/Body"
+        android:paddingBottom="2dp"
+        android:text="@string/label_border" />
+
+    <Spinner
+        android:id="@+id/shortcutBorder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        style="@style/Body"
+        android:paddingBottom="2dp"
+        android:text="@string/label_link" />
+
+    <EditText
+        android:id="@+id/shortcutUri"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:hint="@string/hint_link"
+        android:importantForAutofill="no"
+        android:inputType="textUri"
+        android:maxLines="1"
+        android:textSize="14sp" />
+
+    <TextView
+        style="@style/CardTitle"
+        android:paddingTop="14dp"
+        android:text="@string/config_pick" />
+
+    <EditText
+        android:id="@+id/shortcutSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:hint="@string/hint_search"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/shortcutLoading"
+        style="@style/Body"
+        android:paddingTop="10dp"
+        android:text="@string/config_loading" />
+
+    <ListView
+        android:id="@+id/shortcutAppList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp" />
+</LinearLayout>

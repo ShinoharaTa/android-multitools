@@ -7,7 +7,6 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.SizeF
 import android.util.TypedValue
@@ -144,40 +143,14 @@ class NextAlarmWidgetProvider : AppWidgetProvider() {
             style: WidgetStyle,
             metrics: Metrics,
         ) {
-            val borderPx = context.dp(style.border.widthDp)
-            views.setViewPadding(R.id.widgetRoot, borderPx, borderPx, borderPx, borderPx)
+            views.applyFrame(context, style, R.id.widgetRoot, R.id.widgetInner, metrics.paddingDp)
 
-            // 枠線があるぶん中身は内側なので、角丸を一段小さい drawable に差し替える。
-            views.setInt(
-                R.id.widgetInner,
-                "setBackgroundResource",
-                if (borderPx > 0) R.drawable.bg_widget_inner else R.drawable.bg_widget,
-            )
-
-            val padding = context.dp(metrics.paddingDp)
-            views.setViewPadding(R.id.widgetInner, padding, padding, padding, padding)
-
-            val palette = style.palette
-            if (palette == null) {
-                // SYSTEM。色は指定せず、レイアウトの values / values-night に任せる。
-                // 枠線が 0 のときだけは外枠が縁から覗かないように消しておく。
-                if (borderPx == 0) {
-                    views.tint(R.id.widgetRoot, android.graphics.Color.TRANSPARENT)
-                }
-                return
-            }
-            views.tint(R.id.widgetRoot, if (borderPx > 0) palette.border else android.graphics.Color.TRANSPARENT)
-            views.tint(R.id.widgetInner, palette.background)
+            // SYSTEM のときは文字色も指定しない。レイアウトの values / values-night に任せる。
+            val palette = style.palette ?: return
             views.setTextColor(R.id.widgetTime, palette.text)
             views.setTextColor(R.id.widgetHeader, palette.subText)
             views.setTextColor(R.id.widgetDate, palette.subText)
         }
-
-        private fun RemoteViews.tint(viewId: Int, color: Int) =
-            setColorStateList(viewId, "setBackgroundTintList", ColorStateList.valueOf(color))
-
-        private fun Context.dp(value: Float): Int =
-            (value * resources.displayMetrics.density).toInt()
 
         private fun alarmListIntent(context: Context): PendingIntent? {
             val intent = Alarms.resolve(context)?.intent ?: return null
