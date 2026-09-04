@@ -96,8 +96,12 @@ class AppShortcutWidgetProvider : AppWidgetProvider() {
 
         private fun buildViews(context: Context, appWidgetId: Int, size: SizeF): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_app_shortcut)
-            val metrics = shortcutMetricsFor(size)
             val shortcut = AppShortcut.load(context, appWidgetId)
+            val metrics = shortcutMetricsFor(
+                size,
+                shortcut?.iconSize ?: AppShortcut.DEFAULT_ICON_SIZE,
+                shortcut?.labelMode ?: AppShortcut.DEFAULT_LABEL_MODE,
+            )
 
             views.setViewLayoutWidth(R.id.shortcutIcon, metrics.iconDp, TypedValue.COMPLEX_UNIT_DIP)
             views.setViewLayoutHeight(R.id.shortcutIcon, metrics.iconDp, TypedValue.COMPLEX_UNIT_DIP)

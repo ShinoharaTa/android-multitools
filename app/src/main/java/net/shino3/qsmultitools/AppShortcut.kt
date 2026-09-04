@@ -26,12 +26,22 @@ data class AppShortcut(
     /** 空でなければ ACTION_VIEW でこの URI を開く。ディープリンク用。 */
     val uri: String?,
     val style: WidgetStyle,
+    val iconSize: WidgetIconSize,
+    val labelMode: WidgetLabelMode,
 ) {
     companion object {
         private const val PREFS = "app_shortcuts"
 
         /** アイコンをそのまま置く見た目が既定。 */
         val DEFAULT_STYLE = WidgetStyle(WidgetTheme.TRANSPARENT, WidgetBorder.NONE)
+
+        /**
+         * 端末の標準 (`app_icon_size`) は 48dp だが、ランチャーは実際にはそれより
+         * 大きく描くことが多い (Pixel ランチャーの実測でおよそ 57dp)。
+         * 並べたときの違和感が少ない 56dp を既定にしておく。
+         */
+        val DEFAULT_ICON_SIZE = WidgetIconSize.DP56
+        val DEFAULT_LABEL_MODE = WidgetLabelMode.AUTO
 
         fun load(context: Context, appWidgetId: Int): AppShortcut? {
             val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -46,6 +56,10 @@ data class AppShortcut(
                     border = prefs.getString(key(appWidgetId, "border"), null)
                         .toEnumOr(DEFAULT_STYLE.border),
                 ),
+                iconSize = prefs.getString(key(appWidgetId, "iconSize"), null)
+                    .toEnumOr(DEFAULT_ICON_SIZE),
+                labelMode = prefs.getString(key(appWidgetId, "labelMode"), null)
+                    .toEnumOr(DEFAULT_LABEL_MODE),
             )
         }
 
@@ -55,13 +69,16 @@ data class AppShortcut(
                 .putString(key(appWidgetId, "uri"), shortcut.uri?.takeIf { it.isNotBlank() })
                 .putString(key(appWidgetId, "theme"), shortcut.style.theme.name)
                 .putString(key(appWidgetId, "border"), shortcut.style.border.name)
+                .putString(key(appWidgetId, "iconSize"), shortcut.iconSize.name)
+                .putString(key(appWidgetId, "labelMode"), shortcut.labelMode.name)
                 .apply()
         }
 
         fun delete(context: Context, appWidgetIds: IntArray) {
             val editor = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             appWidgetIds.forEach { id ->
-                listOf("component", "uri", "theme", "border").forEach { editor.remove(key(id, it)) }
+                listOf("component", "uri", "theme", "border", "iconSize", "labelMode")
+                    .forEach { editor.remove(key(id, it)) }
             }
             editor.apply()
         }
@@ -173,6 +190,35 @@ object InstalledApps {
     }.getOrDefault(false)
 }
 
+/**
+ * アイコンの大きさ。
+ *
+ * ホーム画面アプリのアイコンサイズ設定は、そのアプリ自身の内部設定であって
+ * 外から読む方法がない (One UI も Pixel ランチャーも同じ)。
+ * `ActivityManager.getLauncherLargeIconSize()` は端末の標準値 (`app_icon_size`) を
+ * 返すだけでランチャーの設定とは無関係。なので自動判定はあきらめて、
+ * 並べたときに揃うよう本人に選んでもらう。
+ */
+enum class WidgetIconSize(val labelRes: Int, val dp: Float?) {
+    /** ウィジェットの大きさいっぱいに広げる。 */
+    AUTO(R.string.icon_auto, null),
+    DP40(R.string.icon_40, 40f),
+    DP44(R.string.icon_44, 44f),
+    DP48(R.string.icon_48, 48f),
+    DP52(R.string.icon_52, 52f),
+    DP56(R.string.icon_56, 56f),
+    DP64(R.string.icon_64, 64f),
+    DP72(R.string.icon_72, 72f),
+}
+
+/** ラベルを出すかどうか。これもホーム画面アプリの設定は読めないので選んでもらう。 */
+enum class WidgetLabelMode(val labelRes: Int) {
+    /** 高さに余裕があるときだけ出す。 */
+    AUTO(R.string.label_auto),
+    ALWAYS(R.string.label_always),
+    NEVER(R.string.label_never),
+}
+
 /** ショートカットウィジェットのアイコンとラベルの寸法。 */
 data class ShortcutMetrics(
     val iconDp: Float,
@@ -182,20 +228,38 @@ data class ShortcutMetrics(
 )
 
 /**
- * 幅と高さからアイコンの大きさを決める。
+ * ウィジェットの実寸と設定からアイコンとラベルの寸法を決める。
  *
- * ラベルは高さ 60dp 未満だと出さない。1x1 に置いたときはアイコンだけにして、
- * 使える面積を全部アイコンに回したいため。
+ * 指定サイズがセルに収まらないときは縮める。はみ出させない方を優先する。
  */
-fun shortcutMetricsFor(size: SizeF): ShortcutMetrics {
+fun shortcutMetricsFor(
+    size: SizeF,
+    iconSize: WidgetIconSize,
+    labelMode: WidgetLabelMode,
+): ShortcutMetrics {
     val padding = (minOf(size.width, size.height) * 0.10f).coerceIn(3f, 12f)
-    val showLabel = size.height >= 60f
-    val labelSp = (size.height * 0.11f).coerceIn(9f, 18f)
-    val labelBlock = if (showLabel) labelSp * 1.45f + 2f else 0f
-    val icon = minOf(
-        size.width - padding * 2f,
-        size.height - padding * 2f - labelBlock,
-    ).coerceIn(16f, 160f)
+    val innerWidth = size.width - padding * 2f
+    val innerHeight = size.height - padding * 2f
+
+    // 自動なら高さから、固定ならアイコンに比例させる。ランチャーのラベルは
+    // アイコンのおよそ 1/4 の大きさなので、それに合わせておく。
+    val labelSp = when (val dp = iconSize.dp) {
+        null -> (size.height * 0.11f).coerceIn(9f, 18f)
+        else -> (dp * 0.26f).coerceIn(9f, 18f)
+    }
+    val labelBlock = labelSp * 1.45f + 2f
+
+    val iconWithLabel = minOf(innerWidth, innerHeight - labelBlock)
+    val wantsLabel = when (labelMode) {
+        WidgetLabelMode.NEVER -> false
+        WidgetLabelMode.ALWAYS -> true
+        WidgetLabelMode.AUTO -> size.height >= 60f
+    }
+    // ラベルを出すとアイコンが潰れてしまうなら、ラベルの方をあきらめる。
+    val showLabel = wantsLabel && iconWithLabel >= 16f
+    val room = if (showLabel) iconWithLabel else minOf(innerWidth, innerHeight)
+    val icon = (iconSize.dp?.coerceAtMost(room) ?: room).coerceIn(16f, 160f)
+
     return ShortcutMetrics(icon, labelSp, showLabel, padding)
 }
 

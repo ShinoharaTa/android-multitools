@@ -32,6 +32,8 @@ class AppShortcutConfigActivity : Activity() {
     private lateinit var uriInput: EditText
     private lateinit var themeSpinner: Spinner
     private lateinit var borderSpinner: Spinner
+    private lateinit var iconSizeSpinner: Spinner
+    private lateinit var labelModeSpinner: Spinner
     private lateinit var adapter: AppListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +56,8 @@ class AppShortcutConfigActivity : Activity() {
         uriInput = findViewById(R.id.shortcutUri)
         themeSpinner = findViewById(R.id.shortcutTheme)
         borderSpinner = findViewById(R.id.shortcutBorder)
+        iconSizeSpinner = findViewById(R.id.shortcutIconSize)
+        labelModeSpinner = findViewById(R.id.shortcutLabelMode)
 
         // 置き直しのときは今の設定を出しておく。
         val current = AppShortcut.load(this, appWidgetId)
@@ -61,6 +65,16 @@ class AppShortcutConfigActivity : Activity() {
         val style = current?.style ?: AppShortcut.DEFAULT_STYLE
         fillSpinner(themeSpinner, WidgetTheme.entries.map { getString(it.labelRes) }, style.theme.ordinal)
         fillSpinner(borderSpinner, WidgetBorder.entries.map { getString(it.labelRes) }, style.border.ordinal)
+        fillSpinner(
+            iconSizeSpinner,
+            WidgetIconSize.entries.map { getString(it.labelRes) },
+            (current?.iconSize ?: AppShortcut.DEFAULT_ICON_SIZE).ordinal,
+        )
+        fillSpinner(
+            labelModeSpinner,
+            WidgetLabelMode.entries.map { getString(it.labelRes) },
+            (current?.labelMode ?: AppShortcut.DEFAULT_LABEL_MODE).ordinal,
+        )
 
         adapter = AppListAdapter()
         val list = findViewById<ListView>(R.id.shortcutAppList)
@@ -101,6 +115,8 @@ class AppShortcutConfigActivity : Activity() {
                 theme = WidgetTheme.entries[themeSpinner.selectedItemPosition],
                 border = WidgetBorder.entries[borderSpinner.selectedItemPosition],
             ),
+            iconSize = WidgetIconSize.entries[iconSizeSpinner.selectedItemPosition],
+            labelMode = WidgetLabelMode.entries[labelModeSpinner.selectedItemPosition],
         )
         AppShortcut.save(this, appWidgetId, shortcut)
 
