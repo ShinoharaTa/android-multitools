@@ -5,20 +5,15 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.ResolveInfo
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.BaseAdapter
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.ListView
 import android.widget.Spinner
-import android.widget.TextView
 
 /**
  * ショートカットウィジェットの設定画面。
@@ -76,7 +71,7 @@ class AppShortcutConfigActivity : Activity() {
             (current?.labelMode ?: AppShortcut.DEFAULT_LABEL_MODE).ordinal,
         )
 
-        adapter = AppListAdapter()
+        adapter = AppListAdapter(this)
         val list = findViewById<ListView>(R.id.shortcutAppList)
         list.adapter = adapter
         list.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -132,54 +127,5 @@ class AppShortcutConfigActivity : Activity() {
         spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
             .apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
         spinner.setSelection(selected, false)
-    }
-
-    /** アイコンは表示するぶんだけ読む。一度読んだものは使い回す。 */
-    private inner class AppListAdapter : BaseAdapter() {
-
-        private var all: List<ResolveInfo> = emptyList()
-        private var shown: List<ResolveInfo> = emptyList()
-        private var query: String = ""
-        private val icons = HashMap<String, Drawable?>()
-
-        fun replaceAll(apps: List<ResolveInfo>) {
-            all = apps
-            applyQuery()
-        }
-
-        fun filter(text: String) {
-            query = text.trim().lowercase()
-            applyQuery()
-        }
-
-        private fun applyQuery() {
-            shown = if (query.isEmpty()) {
-                all
-            } else {
-                all.filter { InstalledApps.label(this@AppShortcutConfigActivity, it).lowercase().contains(query) }
-            }
-            notifyDataSetChanged()
-        }
-
-        override fun getCount() = shown.size
-
-        override fun getItem(position: Int): ResolveInfo = shown[position]
-
-        override fun getItemId(position: Int) = position.toLong()
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            val view = convertView ?: layoutInflater.inflate(R.layout.item_app, parent, false)
-            val info = shown[position]
-            val component = "${info.activityInfo.packageName}/${info.activityInfo.name}"
-
-            view.findViewById<TextView>(R.id.appLabel).text =
-                InstalledApps.label(this@AppShortcutConfigActivity, info)
-            view.findViewById<ImageView>(R.id.appIcon).setImageDrawable(
-                icons.getOrPut(component) {
-                    runCatching { info.loadIcon(packageManager) }.getOrNull()
-                },
-            )
-            return view
-        }
     }
 }

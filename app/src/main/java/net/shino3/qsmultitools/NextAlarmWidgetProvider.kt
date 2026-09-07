@@ -112,7 +112,13 @@ class NextAlarmWidgetProvider : AppWidgetProvider() {
 
             // タップ先は、そのアラームを持っている時計アプリが用意した PendingIntent が最優先。
             // 無ければ (アラーム未設定など) 通常のアラーム一覧を開く。
-            val target = info?.showIntent ?: alarmListIntent(context)
+            // ただし本人が開き先を指定していれば、それを何より優先する。
+            // 時計アプリ側の PendingIntent が端末によっては期待どおり動かないため。
+            val target = if (Alarms.configured(context) != null) {
+                alarmListIntent(context)
+            } else {
+                info?.showIntent ?: alarmListIntent(context)
+            }
             if (target != null) {
                 views.setOnClickPendingIntent(R.id.widgetRoot, target)
             }

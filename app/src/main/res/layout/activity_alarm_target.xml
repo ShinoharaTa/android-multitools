@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/alarmTargetRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        style="@style/ScreenTitle"
+        android:text="@string/alarm_target_title" />
+
+    <TextView
+        style="@style/Body"
+        android:text="@string/alarm_target_desc" />
+
+    <TextView
+        android:id="@+id/alarmTargetCurrent"
+        style="@style/StatusLine" />
+
+    <Button
+        android:id="@+id/btnAlarmTargetAuto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/alarm_target_use_auto" />
+
+    <TextView
+        style="@style/CardTitle"
+        android:paddingTop="14dp"
+        android:text="@string/config_pick" />
+
+    <EditText
+        android:id="@+id/alarmTargetSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:hint="@string/hint_search"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/alarmTargetLoading"
+        style="@style/Body"
+        android:paddingTop="10dp"
+        android:text="@string/config_loading" />
+
+    <ListView
+        android:id="@+id/alarmTargetList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp" />
+</LinearLayout>

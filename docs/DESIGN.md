@@ -39,6 +39,18 @@ Samsung 固有の component 名や undocumented な extra には依存しない�
 Android 11 以降のパッケージ可視性があるので、解決可否を判定するにはマニフェストに
 `<queries>` で `SHOW_ALARMS` と時計アプリのパッケージ名を書いておく必要がある。
 
+**暗黙 Intent のまま投げない。** `resolveActivity()` は受け手が複数あって既定が無いと
+アプリ選択ダイアログ (ResolverActivity) を返す。それをタイルから `startActivityAndCollapse` で
+投げると、パネルが閉じる動きに巻き込まれて何も開かないように見える。Galaxy に Google 時計も
+入れている構成で起きうる。そこで `queryIntentActivities()` で候補を取り、Galaxy 標準の時計アプリが
+あればそれ、無ければ先頭を自分で選んで、明示コンポーネントにしてから投げる。
+
+**それでも駄目な端末のために、開き先を本人が指定できるようにした。** 指定があれば
+自動判定より優先し、指定アプリが `SHOW_ALARMS` を受けるなら `setPackage` 付きで一覧へ直行、
+受けないならランチャー Activity を起動する。ウィジェットでは時計アプリ側の `showIntent` よりも
+指定を優先する。時計アプリが用意した PendingIntent が端末によっては期待どおり動かないため。
+指定アプリが消えていれば自動判定に落ちる。
+
 ## 2. 必要な permission
 
 | permission | 用途 | 付与方法 |

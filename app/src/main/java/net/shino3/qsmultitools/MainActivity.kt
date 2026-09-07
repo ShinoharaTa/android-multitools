@@ -41,6 +41,7 @@ class MainActivity : Activity() {
 
     private lateinit var alarmStatus: TextView
     private lateinit var alarmDetail: TextView
+    private lateinit var alarmTarget: TextView
 
     private lateinit var widgetStatus: TextView
     private lateinit var widgetCurrent: TextView
@@ -67,6 +68,7 @@ class MainActivity : Activity() {
         timeoutAdbCommand = findViewById(R.id.timeoutAdbCommand)
         alarmStatus = findViewById(R.id.alarmStatus)
         alarmDetail = findViewById(R.id.alarmDetail)
+        alarmTarget = findViewById(R.id.alarmTarget)
         widgetStatus = findViewById(R.id.widgetStatus)
         widgetCurrent = findViewById(R.id.widgetCurrent)
         shortcutStatus = findViewById(R.id.shortcutStatus)
@@ -87,6 +89,9 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.btnOpenWriteSettings).setOnClickListener { openWriteSettings() }
         findViewById<Button>(R.id.btnTestAlarm).setOnClickListener { openAlarms() }
+        findViewById<Button>(R.id.btnAlarmTarget).setOnClickListener {
+            start(Intent(this, AlarmTargetActivity::class.java))
+        }
         findViewById<Button>(R.id.btnAddWidget).setOnClickListener {
             requestPinWidget(NextAlarmWidgetProvider::class.java)
         }
@@ -128,6 +133,11 @@ class MainActivity : Activity() {
         render(alarmStatus, if (alarm != null) FeatureStatus.AVAILABLE else FeatureStatus.UNSUPPORTED)
         alarmDetail.text = alarm?.let { getString(R.string.alarm_detail, it.method) }
             ?: getString(R.string.alarm_not_found)
+        alarmTarget.text = getString(
+            R.string.alarm_target_current,
+            Alarms.configured(this)?.let { InstalledApps.label(this, it) ?: it.packageName }
+                ?: getString(R.string.alarm_target_auto),
+        )
 
         // ウィジェットは権限を使わないので、常に利用可能。
         render(widgetStatus, FeatureStatus.AVAILABLE)

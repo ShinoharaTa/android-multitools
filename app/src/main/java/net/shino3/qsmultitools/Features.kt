@@ -2,6 +2,7 @@ package net.shino3.qsmultitools
 
 import android.Manifest
 import android.app.AlarmManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -120,24 +121,55 @@ object ScreenTimeout {
 /**
  * アラーム一覧を開く。
  *
- * 本命は Android 標準の [AlarmClock.ACTION_SHOW_ALARMS] (API 19+)。Galaxy 標準の時計アプリも
- * これを受けるので、Samsung 固有の component 名や undocumented な extra には基本的に依存しない。
- * 解決できなかったときだけ時計アプリのランチャー Intent にフォールバックする。
+ * 本命は Android 標準の [AlarmClock.ACTION_SHOW_ALARMS] (API 19+)。ただし暗黙 Intent のまま
+ * 投げると、受け手が複数ある端末 (Galaxy に Google 時計も入れている等) ではアプリ選択ダイアログに
+ * なり、クイック設定パネルが閉じる動きと重なって何も開かないように見えることがある。
+ * そこで受け手を自分で選んで明示コンポーネントにしてから投げる。Galaxy 標準の時計アプリがあれば
+ * それを優先する。
+ *
+ * それでも駄目な端末のために、開くアプリを本人が指定できる ([setConfigured])。
+ * 指定があれば自動判定より優先し、タイルとウィジェットの両方がそれを使う。
  */
 object Alarms {
 
     private const val SAMSUNG_CLOCK = "com.sec.android.app.clockpackage"
     private const val AOSP_CLOCK = "com.google.android.deskclock"
+    private const val PREFS = "alarm_target"
+    private const val KEY_COMPONENT = "component"
 
     data class Target(val intent: Intent, val method: String)
+
+    /** 本人が指定した開き先。null なら自動。 */
+    fun configured(context: Context): ComponentName? =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(KEY_COMPONENT, null)
+            ?.let { ComponentName.unflattenFromString(it) }
+
+    fun setConfigured(context: Context, component: ComponentName?) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putString(KEY_COMPONENT, component?.flattenToString())
+            .apply()
+    }
 
     fun resolve(context: Context): Target? {
         val pm = context.packageManager
 
-        val showAlarms = Intent(AlarmClock.ACTION_SHOW_ALARMS)
-        resolve(pm, showAlarms)?.let {
-            return Target(showAlarms, "SHOW_ALARMS → ${it.activityInfo.packageName}")
+        configured(context)?.let { chosen ->
+            // 指定アプリが SHOW_ALARMS を受けるならアラーム一覧に直行できる。
+            explicit(pm, Intent(AlarmClock.ACTION_SHOW_ALARMS).setPackage(chosen.packageName))
+                ?.let { return Target(it, "SHOW_ALARMS → ${chosen.packageName} (指定)") }
+            // 受けないなら普通にそのアプリを起動する。
+            val launch = Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_LAUNCHER)
+                .setComponent(chosen)
+            if (resolves(pm, launch)) return Target(launch, "起動 → ${chosen.flattenToShortString()} (指定)")
+            pm.getLaunchIntentForPackage(chosen.packageName)
+                ?.let { return Target(it, "起動 → ${chosen.packageName} (指定)") }
+            // 指定アプリが消えている。自動判定に落ちる。
         }
+
+        explicit(pm, Intent(AlarmClock.ACTION_SHOW_ALARMS))
+            ?.let { return Target(it, "SHOW_ALARMS → ${it.component?.packageName}") }
 
         // ここに来るのは標準 Intent を受ける時計アプリが無い端末。既知の時計アプリを直接開く。
         for (pkg in listOf(SAMSUNG_CLOCK, AOSP_CLOCK)) {
@@ -151,9 +183,38 @@ object Alarms {
     fun status(context: Context): FeatureStatus =
         if (resolve(context) != null) FeatureStatus.AVAILABLE else FeatureStatus.UNSUPPORTED
 
-    /** resolveActivity(Intent, Int) は API 33 で deprecated。新しい ResolveInfoFlags 版を使う。 */
-    private fun resolve(pm: PackageManager, intent: Intent): ResolveInfo? =
-        pm.resolveActivity(intent, PackageManager.ResolveInfoFlags.of(0L))
+    /** SHOW_ALARMS を受けるアプリのパッケージ名。設定画面で「対応」印を付けるのに使う。 */
+    fun handlerPackages(context: Context): Set<String> =
+        runCatching {
+            context.packageManager.queryIntentActivities(
+                Intent(AlarmClock.ACTION_SHOW_ALARMS),
+                PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong()),
+            ).map { it.activityInfo.packageName }.toSet()
+        }.getOrDefault(emptySet())
+
+    /**
+     * 暗黙 Intent の受け手を自分で 1 つ選び、明示コンポーネントにして返す。
+     * 候補が無ければ null。Galaxy 標準の時計アプリがあればそれを取る。
+     *
+     * resolveActivity() に任せると、受け手が複数のときは選択ダイアログ (ResolverActivity) が
+     * 返ってくる。それをタイルから投げるとパネルが閉じる動きに巻き込まれて消えるので使わない。
+     */
+    private fun explicit(pm: PackageManager, intent: Intent): Intent? {
+        val candidates = runCatching {
+            pm.queryIntentActivities(
+                intent,
+                PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong()),
+            )
+        }.getOrDefault(emptyList())
+        val pick = candidates.firstOrNull { it.activityInfo.packageName == SAMSUNG_CLOCK }
+            ?: candidates.firstOrNull()
+            ?: return null
+        return Intent(intent).setClassName(pick.activityInfo.packageName, pick.activityInfo.name)
+    }
+
+    private fun resolves(pm: PackageManager, intent: Intent): Boolean = runCatching {
+        pm.resolveActivity(intent, PackageManager.ResolveInfoFlags.of(0L)) != null
+    }.getOrDefault(false)
 }
 
 /**

@@ -87,6 +87,11 @@
         </service>
 
         <activity
+            android:name=".AlarmTargetActivity"
+            android:exported="false"
+            android:label="@string/alarm_target_title" />
+
+        <activity
             android:name=".AppShortcutConfigActivity"
             android:exported="true"
             android:label="@string/shortcut_widget">

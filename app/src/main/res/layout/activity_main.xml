@@ -131,6 +131,20 @@
                 style="@style/Body"
                 android:text="@string/alarm_desc" />
 
+            <TextView
+                android:id="@+id/alarmTarget"
+                style="@style/Body" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/alarm_target_hint" />
+
+            <Button
+                android:id="@+id/btnAlarmTarget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_alarm_target" />
+
             <Button
                 android:id="@+id/btnTestAlarm"
                 android:layout_width="wrap_content"
