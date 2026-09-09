@@ -46,6 +46,24 @@ Android 11 以降のパッケージ可視性があるので、解決可否を判
 入れている構成で起きうる。そこで `queryIntentActivities()` で候補を取り、Galaxy 標準の時計アプリが
 あればそれ、無ければ先頭を自分で選んで、明示コンポーネントにしてから投げる。
 
+**本当の原因は権限だった。** Galaxy (One UI 9 / Android 17) の実機ログを取ったところ、
+タイルから投げた Intent が system_server で弾かれていた。
+
+```
+Permission Denial: starting Intent { act=SHOW_ALARMS
+  cmp=com.sec.android.app.clockpackage/.alarm.ui.activity.AlarmCTSHandleActivity }
+  requires com.android.alarm.permission.SET_ALARM
+```
+
+Samsung の受け口 `AlarmCTSHandleActivity` は `android:permission` で
+`com.android.alarm.permission.SET_ALARM` を要求している。`AlarmClock` の javadoc にも
+「SHOW_ALARMS 等を受けるアプリはこの権限で保護せよ」と書いてあり、Samsung はそれに従っている。
+Google 時計は保護していないので、宣言なしでも開けてしまい気付きにくかった。
+
+この権限は protection level が normal なので、マニフェストに書けばインストール時に自動で付く。
+SecurityException は PendingIntent を発火する system_server 側で起きるため、
+こちらの try-catch には入らず、何も起きないように見えていた。
+
 **それでも駄目な端末のために、開き先を本人が指定できるようにした。** 指定があれば
 自動判定より優先し、指定アプリが `SHOW_ALARMS` を受けるなら `setPackage` 付きで一覧へ直行、
 受けないならランチャー Activity を起動する。ウィジェットでは時計アプリ側の `showIntent` よりも
@@ -95,6 +113,18 @@ shell uid から叩いても同じだった。Samsung 時計の `content://com.s
 `android.provider.AlarmClock` にあるのは `SET_ALARM` (新規作成) / `SHOW_ALARMS` (一覧を開く) /
 `DISMISS_ALARM` / `SNOOZE_ALARM` / `SET_TIMER` / `SHOW_TIMERS` / `DISMISS_TIMER` だけ。
 一覧の取得も、既存アラームの有効・無効の切り替えも用意されていない。
+
+**Samsung の時計プロバイダも読めない。** 実機で確認したところ、
+`com.sec.android.app.clockpackage.provider.SearchProvider` は
+`com.samsung.android.provider.indexing.permission.ACCESS_PROVIDER` を要求し、
+shell uid からも弾かれた。一覧を読む道はやはり無い。
+
+**Samsung は就寝モードの起床通知も「次のアラーム」として登録する。** 実機の `dumpsys alarm` に
+`*walarm*:com.sec.android.app.clockpackage.alarm.SCHEDULE_WAKEUP_NOTIFY` が `setAlarmClock()` で
+登録されていた。時計アプリ上で就寝モードのトグルが OFF でも残っていることがあり、
+その場合ウィジェットは有効なアラームではない時刻を出す。ただしこれはシステム全体の値であって、
+ステータスバーのアラーム表示も `next_alarm_formatted` も同じ時刻を指す。
+`AlarmClockInfo` からは発火時刻と PendingIntent しか取れず、種別を見分ける術がないので直せない。
 
 **取れるのは「次の 1 件」だけ。**
 `AlarmManager.getNextAlarmClock()` は `setAlarmClock()` で立てられたアラームなら

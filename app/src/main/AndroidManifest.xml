@@ -14,6 +14,15 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <!--
+      アラーム一覧を開くために必要。protection level は normal なのでインストール時に自動で付く。
+      Galaxy 標準の時計アプリは SHOW_ALARMS の受け口 (AlarmCTSHandleActivity) を
+      android:permission="com.android.alarm.permission.SET_ALARM" で保護しているため、
+      これを宣言していないと SecurityException で弾かれ、何も起きないように見える。
+      Google 時計は保護していないので、宣言なしでも開けてしまい気付きにくい。
+    -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+
+    <!--
       Android 11+ のパッケージ可視性。時計アプリの解決と、ショートカットに置くアプリの
       一覧取得に必要。MAIN + LAUNCHER の intent を書けばランチャーに出るアプリが見えるので、
       制限付きの QUERY_ALL_PACKAGES は使わない。
