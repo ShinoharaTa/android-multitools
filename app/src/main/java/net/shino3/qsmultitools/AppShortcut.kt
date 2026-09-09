@@ -11,7 +11,6 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.util.SizeF
 
 /**
@@ -23,8 +22,6 @@ import android.util.SizeF
 data class AppShortcut(
     /** 起動するランチャー Activity。アイコンとラベルもここから取る。 */
     val component: ComponentName,
-    /** 空でなければ ACTION_VIEW でこの URI を開く。ディープリンク用。 */
-    val uri: String?,
     val style: WidgetStyle,
     val iconSize: WidgetIconSize,
     val labelMode: WidgetLabelMode,
@@ -49,7 +46,6 @@ data class AppShortcut(
             val component = ComponentName.unflattenFromString(flat) ?: return null
             return AppShortcut(
                 component = component,
-                uri = prefs.getString(key(appWidgetId, "uri"), null),
                 style = WidgetStyle(
                     theme = prefs.getString(key(appWidgetId, "theme"), null)
                         .toEnumOr(DEFAULT_STYLE.theme),
@@ -66,7 +62,6 @@ data class AppShortcut(
         fun save(context: Context, appWidgetId: Int, shortcut: AppShortcut) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
                 .putString(key(appWidgetId, "component"), shortcut.component.flattenToString())
-                .putString(key(appWidgetId, "uri"), shortcut.uri?.takeIf { it.isNotBlank() })
                 .putString(key(appWidgetId, "theme"), shortcut.style.theme.name)
                 .putString(key(appWidgetId, "border"), shortcut.style.border.name)
                 .putString(key(appWidgetId, "iconSize"), shortcut.iconSize.name)
@@ -156,24 +151,9 @@ object InstalledApps {
         return bitmap
     }
 
-    /**
-     * タップしたときに飛ばす Intent。
-     *
-     * URI が設定されていればそのアプリで開くことを試し、開けなければパッケージ指定を外す。
-     * それも駄目なら普通にアプリを起動する。
-     */
+    /** タップしたときに飛ばす Intent。ランチャーのエントリを直接指定して起動する。 */
     fun launchIntent(context: Context, shortcut: AppShortcut): Intent? {
         val pm = context.packageManager
-        val uri = shortcut.uri?.takeIf { it.isNotBlank() }
-        if (uri != null) {
-            val parsed = runCatching { Uri.parse(uri) }.getOrNull()
-            if (parsed != null) {
-                val inApp = Intent(Intent.ACTION_VIEW, parsed).setPackage(shortcut.component.packageName)
-                if (resolves(pm, inApp)) return inApp
-                val anywhere = Intent(Intent.ACTION_VIEW, parsed)
-                if (resolves(pm, anywhere)) return anywhere
-            }
-        }
         val direct = Intent(Intent.ACTION_MAIN)
             .addCategory(Intent.CATEGORY_LAUNCHER)
             .setComponent(shortcut.component)

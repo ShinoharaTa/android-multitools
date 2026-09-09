@@ -78,28 +78,63 @@ object UsbDebug {
  *
  * 書き込みには WRITE_SETTINGS が要る。これは appop なので
  * Settings.ACTION_MANAGE_WRITE_SETTINGS の許可画面から本人が許可できる。
+ *
+ * 巡回する候補は本人が選べる。全部入れるとタップ回数が増えるし、
+ * 端末によって欲しい値が違うため。
  */
 object ScreenTimeout {
 
-    /** 巡回する候補 (ミリ秒)。昇順であること。 */
-    val STEPS = intArrayOf(30_000, 120_000, 600_000, 1_800_000)
+    /** 選べる候補 (ミリ秒)。昇順であること。Int.MAX_VALUE は「消灯しない」。 */
+    val CANDIDATES = intArrayOf(
+        15_000,
+        30_000,
+        60_000,
+        120_000,
+        300_000,
+        600_000,
+        1_800_000,
+        Int.MAX_VALUE,
+    )
+
+    /** 既定では 15 秒だけ外しておく。短すぎて巡回に混ざると邪魔になりやすい。 */
+    private val DEFAULT_ENABLED = CANDIDATES.filter { it != 15_000 }.toSet()
+
+    private const val PREFS = "screen_timeout"
+    private const val KEY_STEPS = "steps"
 
     fun status(context: Context): FeatureStatus =
         if (Settings.System.canWrite(context)) FeatureStatus.AVAILABLE else FeatureStatus.NEEDS_PERMISSION
 
+    /** 巡回に使う候補。1 つも選ばれていなければ既定に戻す。 */
+    fun steps(context: Context): List<Int> {
+        val saved = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getStringSet(KEY_STEPS, null)
+            ?.mapNotNull { it.toIntOrNull() }
+            ?.filter { it in CANDIDATES }
+            ?.sorted()
+        return if (saved.isNullOrEmpty()) DEFAULT_ENABLED.sorted() else saved
+    }
+
+    fun setSteps(context: Context, values: Set<Int>) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putStringSet(KEY_STEPS, values.map { it.toString() }.toSet())
+            .apply()
+    }
+
     fun current(context: Context): Int =
         runCatching {
             Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT)
-        }.getOrDefault(STEPS[0])
+        }.getOrDefault(steps(context).first())
 
     /**
-     * 次の候補。現在値が候補に無くても「今より大きい最初の候補」に落ちるので、
-     * 15 秒なら 30 秒、5 分なら 10 分、Int.MAX_VALUE (消灯しない) なら先頭に戻る。
+     * 次の候補。現在値が候補に無くても「今より大きい最初の候補」に落ちるので素直に動く。
+     * 一番大きい候補にいるときは先頭に戻る。
      */
-    fun next(current: Int): Int = STEPS.firstOrNull { it > current } ?: STEPS[0]
+    fun next(current: Int, steps: List<Int>): Int =
+        steps.firstOrNull { it > current } ?: steps.first()
 
     fun applyNext(context: Context): Result<Int> {
-        val target = next(current(context))
+        val target = next(current(context), steps(context))
         return runCatching {
             Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, target)
             check(current(context) == target) { "設定が反映されませんでした" }

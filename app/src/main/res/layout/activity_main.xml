@@ -82,6 +82,18 @@
                 style="@style/Body"
                 android:text="@string/screen_timeout_desc" />
 
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/timeout_steps_label" />
+
+            <LinearLayout
+                android:id="@+id/timeoutSteps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="6dp" />
+
             <LinearLayout
                 android:id="@+id/timeoutGrantBlock"
                 android:layout_width="match_parent"

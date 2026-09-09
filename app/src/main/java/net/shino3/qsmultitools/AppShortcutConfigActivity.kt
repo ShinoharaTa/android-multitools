@@ -24,7 +24,6 @@ import android.widget.Spinner
 class AppShortcutConfigActivity : Activity() {
 
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-    private lateinit var uriInput: EditText
     private lateinit var themeSpinner: Spinner
     private lateinit var borderSpinner: Spinner
     private lateinit var iconSizeSpinner: Spinner
@@ -48,7 +47,6 @@ class AppShortcutConfigActivity : Activity() {
 
         setContentView(R.layout.activity_shortcut_config)
         findViewById<View>(R.id.configRoot).padForSystemBars()
-        uriInput = findViewById(R.id.shortcutUri)
         themeSpinner = findViewById(R.id.shortcutTheme)
         borderSpinner = findViewById(R.id.shortcutBorder)
         iconSizeSpinner = findViewById(R.id.shortcutIconSize)
@@ -56,7 +54,6 @@ class AppShortcutConfigActivity : Activity() {
 
         // 置き直しのときは今の設定を出しておく。
         val current = AppShortcut.load(this, appWidgetId)
-        uriInput.setText(current?.uri.orEmpty())
         val style = current?.style ?: AppShortcut.DEFAULT_STYLE
         fillSpinner(themeSpinner, WidgetTheme.entries.map { getString(it.labelRes) }, style.theme.ordinal)
         fillSpinner(borderSpinner, WidgetBorder.entries.map { getString(it.labelRes) }, style.border.ordinal)
@@ -105,7 +102,6 @@ class AppShortcutConfigActivity : Activity() {
     private fun commit(info: ResolveInfo) {
         val shortcut = AppShortcut(
             component = ComponentName(info.activityInfo.packageName, info.activityInfo.name),
-            uri = uriInput.text?.toString()?.trim(),
             style = WidgetStyle(
                 theme = WidgetTheme.entries[themeSpinner.selectedItemPosition],
                 border = WidgetBorder.entries[borderSpinner.selectedItemPosition],

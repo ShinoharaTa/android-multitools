@@ -2,7 +2,7 @@ package net.shino3.qsmultitools
 
 import android.service.quicksettings.Tile
 
-/** タップするたびに画面消灯までの時間を 30秒 → 2分 → 10分 → 30分 と巡回させる。 */
+/** タップするたびに画面消灯までの時間を、選ばれている候補で巡回させる。 */
 class ScreenTimeoutTileService : BaseTileService() {
 
     override fun refresh() {

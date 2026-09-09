@@ -20,6 +20,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -102,6 +104,7 @@ class MainActivity : Activity() {
 
         setUpAddTileButtons()
         setUpStyleSpinners()
+        setUpTimeoutSteps()
     }
 
     override fun onResume() {
@@ -197,6 +200,38 @@ class MainActivity : Activity() {
         true
     } catch (e: Exception) {
         false
+    }
+
+    /** 巡回に使う候補をチェックボックスで選ばせる。 */
+    private fun setUpTimeoutSteps() {
+        val container = findViewById<LinearLayout>(R.id.timeoutSteps)
+        val enabled = ScreenTimeout.steps(this).toMutableSet()
+        ScreenTimeout.CANDIDATES.forEach { value ->
+            container.addView(
+                CheckBox(this).apply {
+                    text = ScreenTimeout.format(value)
+                    isChecked = value in enabled
+                    setOnCheckedChangeListener { _, checked ->
+                        if (checked) enabled.add(value) else enabled.remove(value)
+                        ScreenTimeout.setSteps(this@MainActivity, enabled)
+                        // 1 つも残らなければ既定に戻るので、表示も実際の候補に合わせ直す。
+                        val actual = ScreenTimeout.steps(this@MainActivity).toSet()
+                        if (actual != enabled) {
+                            enabled.clear()
+                            enabled.addAll(actual)
+                            syncTimeoutChecks(container)
+                        }
+                    }
+                },
+            )
+        }
+    }
+
+    private fun syncTimeoutChecks(container: LinearLayout) {
+        val enabled = ScreenTimeout.steps(this).toSet()
+        ScreenTimeout.CANDIDATES.forEachIndexed { index, value ->
+            (container.getChildAt(index) as? CheckBox)?.isChecked = value in enabled
+        }
     }
 
     // ---- ウィジェットの見た目 -------------------------------------------

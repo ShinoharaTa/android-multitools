@@ -21,6 +21,7 @@
     <string name="section_screen_timeout">2. 画面タイムアウト切替</string>
     <string name="section_alarm">3. アラーム画面を開く</string>
     <string name="section_tiles">クイック設定への追加</string>
+    <string name="timeout_steps_label">巡回する候補 (チェックを外すと飛ばします)</string>
     <string name="section_widget">ホーム画面ウィジェット</string>
     <string name="section_shortcut">アプリのショートカット</string>
 
@@ -28,7 +29,7 @@
     <string name="usb_debug_grant_hint">PC と USB 接続して、下のコマンドを一度だけ実行してください。実行後この画面に戻ると状態が更新されます。</string>
     <string name="usb_debug_note">USB デバッグを OFF にしても権限はアプリに残るため、次回タイルをタップすれば ON に戻せます。</string>
 
-    <string name="screen_timeout_desc">タイルをタップするたびに、画面消灯までの時間を 30秒 → 2分 → 10分 → 30分 の順で切り替えます。現在値が候補にない場合は、直近の大きい候補へ移動します。</string>
+    <string name="screen_timeout_desc">タイルをタップするたびに、下でチェックした値を短い順に巡回します。現在値が候補にない場合は、直近の大きい候補へ移動します。</string>
     <string name="screen_timeout_grant_hint">Android の「システム設定の変更」を許可してください。</string>
 
     <string name="alarm_target_title">アラームの開き先</string>
@@ -57,15 +58,13 @@
     <string name="btn_add_shortcut">ショートカットを追加</string>
     <string name="shortcut_widget">アプリのショートカット</string>
     <string name="shortcut_description">選んだアプリを開くショートカット。アイコンはそのアプリのものを使います。</string>
-    <string name="shortcut_desc">YouTube のようなアプリを 1 タップで開くためのウィジェットです。アイコンとラベルは対象アプリのものをそのまま使い、ウィジェットの大きさに合わせて拡大縮小します。開くリンクを指定すればディープリンクも開けます。</string>
+    <string name="shortcut_desc">YouTube のようなアプリを 1 タップで開くためのウィジェットです。アイコンとラベルは対象アプリのものをそのまま使い、ウィジェットの大きさに合わせて拡大縮小します。</string>
     <string name="shortcut_hint">追加すると設定画面が開くので、そこでアプリを選びます。置いたあとでもウィジェットを長押しして設定し直せます。見た目はショートカットごとに決められます。</string>
     <string name="shortcut_unset">未設定</string>
     <string name="shortcut_icon_description">アプリのアイコン</string>
     <string name="config_desc">タップしたときに開くアプリを選びます。アイコンとラベルはそのアプリのものを使います。</string>
     <string name="config_pick">アプリを選ぶ</string>
     <string name="config_loading">アプリを読み込んでいます…</string>
-    <string name="label_link">開くリンク (任意)</string>
-    <string name="hint_link">https://www.youtube.com/@example</string>
     <string name="hint_search">アプリ名で絞り込み</string>
     <string name="label_icon_size">アイコンの大きさ</string>
     <string name="label_label_mode">アプリ名の表示</string>
