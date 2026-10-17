@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ウィジェット内のボタン。色はテーマに合わせて tint で変える。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widget_button_bg" />
+    <corners android:radius="12dp" />
+</shape>

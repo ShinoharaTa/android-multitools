@@ -1,5 +1,6 @@
 package net.shino3.qsmultitools
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -109,6 +110,25 @@ fun metricsFor(size: SizeF, timeTextLength: Int): Metrics {
         showDate = showDate,
         paddingDp = padding,
     )
+}
+
+/**
+ * ホーム画面アプリが報告しているウィジェットの寸法 (dp)。
+ *
+ * API 31 以降は OPTION_APPWIDGET_SIZES に取り得るサイズが並ぶので、その中で最小のものを使う。
+ * どの向きでも中身が収まるようにするため。無ければ MIN_WIDTH / MIN_HEIGHT に落とす。
+ */
+fun widgetSize(manager: AppWidgetManager, appWidgetId: Int, fallback: SizeF): SizeF {
+    val options = runCatching { manager.getAppWidgetOptions(appWidgetId) }.getOrNull() ?: return fallback
+    val sizes = runCatching {
+        options.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java)
+    }.getOrNull()
+    sizes?.filter { it.width > 0f && it.height > 0f }
+        ?.minByOrNull { it.width * it.height }
+        ?.let { return it }
+    val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+    val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+    return if (width > 0 && height > 0) SizeF(width.toFloat(), height.toFloat()) else fallback
 }
 
 /** 既定の 2x1 相当。ホーム画面アプリが寸法を教えてくれないときに使う。 */

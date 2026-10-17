@@ -65,36 +65,8 @@ class NextAlarmWidgetProvider : AppWidgetProvider() {
 
         private fun render(context: Context, manager: AppWidgetManager, appWidgetId: Int) {
             runCatching {
-                manager.updateAppWidget(appWidgetId, buildViews(context, sizeOf(manager, appWidgetId)))
-            }
-        }
-
-        /**
-         * ホーム画面アプリが報告しているウィジェットの寸法 (dp)。
-         *
-         * API 31 以降は OPTION_APPWIDGET_SIZES に取り得るサイズが並ぶので、その中で最小のものを使う。
-         * どの向きでも中身が収まるようにするため。無ければ MIN_WIDTH / MIN_HEIGHT に落とす。
-         */
-        private fun sizeOf(manager: AppWidgetManager, appWidgetId: Int): SizeF {
-            val options = runCatching { manager.getAppWidgetOptions(appWidgetId) }.getOrNull()
-                ?: return DEFAULT_WIDGET_SIZE
-
-            val sizes = runCatching {
-                options.getParcelableArrayList(
-                    AppWidgetManager.OPTION_APPWIDGET_SIZES,
-                    SizeF::class.java,
-                )
-            }.getOrNull()
-            sizes?.filter { it.width > 0f && it.height > 0f }
-                ?.minByOrNull { it.width * it.height }
-                ?.let { return it }
-
-            val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
-            val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
-            return if (width > 0 && height > 0) {
-                SizeF(width.toFloat(), height.toFloat())
-            } else {
-                DEFAULT_WIDGET_SIZE
+                val size = widgetSize(manager, appWidgetId, DEFAULT_WIDGET_SIZE)
+                manager.updateAppWidget(appWidgetId, buildViews(context, size))
             }
         }
 

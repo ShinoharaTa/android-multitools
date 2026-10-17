@@ -101,4 +101,51 @@
     <string name="btn_add_tile">タイルを追加: %1$s</string>
     <string name="btn_refresh">状態を再確認</string>
 
+    <!-- タイマー -->
+    <string name="section_timer">タイマー</string>
+    <string name="timer_desc">ホーム画面のウィジェットから、決まった長さのタイマーを 1 タップで始めます。動いている間は残り時間を出し、時間が来たら完了画面で止めるか延長するかを選べます。時計アプリは使わず、このアプリ自身が鳴らします。</string>
+    <string name="timer_presets_label">開始ボタンに出す長さ</string>
+    <string name="timer_ring_mode_label">鳴り終わり</string>
+    <string name="timer_vibrate">バイブも鳴らす</string>
+    <string name="ring_until_stopped">止めるまで鳴らす</string>
+    <string name="ring_15s">15秒で自動停止</string>
+    <string name="ring_30s">30秒で自動停止</string>
+    <string name="ring_1m">1分で自動停止</string>
+    <string name="ring_3m">3分で自動停止</string>
+    <string name="ring_5m">5分で自動停止</string>
+    <string name="timer_perm_notifications">通知: %1$s</string>
+    <string name="timer_perm_full_screen">完了画面の自動表示 (全画面通知): %1$s</string>
+    <string name="timer_perm_battery">バッテリーの最適化: %1$s</string>
+    <string name="perm_granted">許可済み</string>
+    <string name="perm_denied">未許可</string>
+    <string name="battery_unrestricted">制限なし</string>
+    <string name="battery_optimized">最適化中 (止まることがあります)</string>
+    <string name="timer_perm_hint">確実に鳴らすには 3 つとも許可してください。One UI はバッテリーを最適化しているアプリを眠らせることがあり、そうなるとタイマーが遅れたり鳴らなかったりします。</string>
+    <string name="btn_allow_notifications">通知を許可</string>
+    <string name="btn_allow_full_screen">全画面通知を許可</string>
+    <string name="btn_allow_battery">最適化を外す</string>
+    <string name="btn_test_timer">動作確認 (10秒)</string>
+    <string name="btn_add_timer_widget">タイマーウィジェットを追加</string>
+    <string name="timer_current_idle">状態: 待機中</string>
+    <string name="timer_current_running">状態: 動作中 (%1$s)</string>
+    <string name="timer_current_ringing">状態: 鳴っています</string>
+    <string name="timer_widget">タイマー</string>
+    <string name="timer_widget_description">決まった長さのタイマーを 1 タップで開始します。動作中は残り時間を出します。</string>
+    <string name="timer_widget_remaining">残り</string>
+    <string name="timer_preview_preset">3分</string>
+    <string name="timer_running_title">%1$s のタイマー</string>
+    <string name="timer_running_text">残り時間</string>
+    <string name="timer_done_title">時間です</string>
+    <string name="timer_done_text">%1$s のタイマーが終わりました</string>
+    <string name="timer_finished_text">%1$s のタイマーが終わりました (自動停止)</string>
+    <string name="timer_finished_missed">%1$s のタイマーは再起動中に終わっていました</string>
+    <string name="timer_extend_label">延長して再開</string>
+    <string name="timer_stop">停止</string>
+    <string name="timer_cancel">キャンセル</string>
+    <string name="timer_cancel_short">×</string>
+    <string name="channel_timer_running">タイマー (動作中)</string>
+    <string name="channel_timer_ringing">タイマー (鳴動)</string>
+    <string name="channel_timer_fallback">タイマー (予備の鳴動)</string>
+    <string name="channel_timer_finished">タイマー (終了のお知らせ)</string>
+
 </resources>

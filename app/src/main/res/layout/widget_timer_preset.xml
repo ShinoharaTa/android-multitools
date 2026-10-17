@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 開始ボタン。並んだ数で幅を等分する。 -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/timerButton"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_margin="3dp"
+    android:layout_weight="1"
+    android:background="@drawable/bg_widget_button"
+    android:gravity="center"
+    android:includeFontPadding="false"
+    android:maxLines="1"
+    android:text="@string/timer_preview_preset"
+    android:textColor="@color/widget_text"
+    android:textSize="15sp"
+    android:textStyle="bold" />

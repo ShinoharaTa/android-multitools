@@ -78,7 +78,14 @@ SecurityException は PendingIntent を発火する system_server 側で起き�
 | `WRITE_SETTINGS` | `Settings.System.SCREEN_OFF_TIMEOUT` の書き込み | 設定アプリの「システム設定の変更」、または `adb shell appops set` |
 | `BIND_QUICK_SETTINGS_TILE` | `TileService` を SystemUI にバインドさせる | サービス側の `android:permission` に書くだけ。要求はしない |
 
-アラームには権限が要らない。
+| `USE_EXACT_ALARM` | タイマーの発火 (`setExactAndAllowWhileIdle`) | インストール時に自動で付く。Play では用途が制限されるが、ストア公開しないので関係ない |
+| `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | 鳴らしている間の前景サービス | 宣言するだけ |
+| `USE_FULL_SCREEN_INTENT` | ロック中に完了画面を開く | 既定で付くが、設定アプリから外せる。`canUseFullScreenIntent()` で確認する |
+| `POST_NOTIFICATIONS` | 残り時間と鳴動の通知 | 実行時に許可を求める |
+| `RECEIVE_BOOT_COMPLETED` | 再起動後にタイマーを張り直す | 宣言するだけ |
+| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | 最適化を外す確認ダイアログを出す | 本人がダイアログで許可する |
+
+アラームの画面を開くだけなら権限は要らない (`SET_ALARM` は normal なので自動で付く)。
 
 ## 3. 最近の Android / One UI での制約
 
@@ -230,11 +237,69 @@ URI を指定してアプリ内リンクを開く機能を一度入れたが、�
 対象アプリに Intent が届いたあと、アプリ側が「この URL は自分で扱わない」と判断して
 ブラウザに投げ直すことがあり、こちらでは制御できないのも理由。
 
-## 7. プロジェクト構成
+## 7. タイマー
+
+時計アプリの `ACTION_SET_TIMER` に任せる案もあったが、自前で数えて鳴らすことにした。
+残り時間をウィジェットに出すには、動いているタイマーの終了時刻をこちらが知っている必要がある。
+しかし時計アプリの状態は外から読めない (4 章と同じ理由)。
+
+### 状態の持ち方
+
+状態は `Timer` オブジェクトだけが持ち、SharedPreferences に `IDLE` / `RUNNING` / `RINGING` と終了時刻を置く。
+ウィジェット・通知・完了画面はそれを読んで描くだけ。操作はすべて `TimerReceiver` に集めた。
+ウィジェットのボタン、通知のボタン、アラームの発火、再起動がここに届く。
+
+終了時刻は `elapsedRealtime` 基準で持つ。時刻合わせの影響を受けないため。
+ただし再起動で 0 に戻るので、壁時計の終了時刻も併せて保存しておく。
+`BOOT_COMPLETED` を受けたら壁時計から残りを出し直して張り直す。
+再起動中に終わっていた場合は鳴らさず、通知だけ出す。Android 15 以降は `BOOT_COMPLETED` から
+mediaPlayback の FGS を起動できないため。
+
+ボタンの PendingIntent は、長さを data URI (`timer://start/180000`) に入れて区別する。
+extra の違いだけでは同一視され、最後に作ったものに上書きされてしまう。
+
+### 発火
+
+`setAlarmClock` は使わない。使うと `getNextAlarmClock()` にタイマーが出てしまい、
+「次のアラーム」ウィジェットとステータスバーの時計アイコンが乗っ取られる。
+`setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP)` なら Doze 中でも発火する。
+発火時には一時的な許可リスト入りもするので、そのまま前景サービスを起動できる。
+権限は `USE_EXACT_ALARM` で足り、`SCHEDULE_EXACT_ALARM` のような本人の許可操作は要らない。
+
+### 鳴らす
+
+鳴らしている間だけ `TimerRingService` (FGS, mediaPlayback) を動かす。
+既定のアラーム音を `MediaPlayer` でループ再生し、`AudioAttributes.USAGE_ALARM` を付ける。
+バイブにも `VibrationAttributes.USAGE_ALARM` を付ける。FGS の通知は全画面インテント付きで出す。
+ロック中・画面オフなら `TimerRingingActivity` が直接開き (`showWhenLocked` / `turnScreenOn`)、
+使用中ならヘッドアップ通知になる。通知のチャンネル自体は無音にしてある。
+音はサービスが鳴らすので、チャンネルからも鳴ると二重になるため。
+
+FGS を起動できなかったときの保険として、アラーム音付きのチャンネル (`FLAG_INSISTENT`) で
+同じ通知を出す。音は通知を消すまで鳴り続ける。
+
+自動停止モードでは、サービス内の `Handler` で指定時間後に止める。止めたら「終わりました」の通知を残す。
+
+### 残り時間の表示
+
+ウィジェットも通知も `Chronometer` のカウントダウンに描かせる
+(RemoteViews の `setChronometer` + `setChronometerCountDown`、通知の `setUsesChronometer` + `setChronometerCountDown`)。
+毎秒の更新も常駐もしない。描き直すのは状態が変わったときとリサイズのときだけ。
+鳴動中は同じ Chronometer を `+%s` 形式の数え上げに切り替えて、鳴ってからの経過を出す。
+
+### 延長
+
+- 動作中の `+1分`: 終了時刻を後ろにずらして張り直す
+- 鳴動中の `+N分`: 音を止め、「今から N 分」で `RUNNING` に戻す
+
+延長の直後に古いアラームが届くことがある。そのため `fire()` では残り時間を見て、
+まだ 1 秒以上残っていれば張り直すだけにしてある。
+
+## 8. プロジェクト構成
 
 ```
 app/src/main/
-├── AndroidManifest.xml          権限宣言 / <queries> / TileService 3 つ
+├── AndroidManifest.xml          権限宣言 / <queries> / TileService 3 つ / ウィジェット 3 つ
 ├── java/net/shino3/qsmultitools/
 │   ├── Features.kt              UsbDebug / ScreenTimeout / Alarms の判定と操作。UI を持たない
 │   ├── BaseTileService.kt       タイル共通処理 (状態反映、activity 起動、ロック解除、トースト)
@@ -246,6 +311,11 @@ app/src/main/
 │   ├── AppShortcut.kt           ショートカットの設定 / アプリ一覧 / アイコン
 │   ├── AppShortcutWidgetProvider.kt
 │   ├── AppShortcutConfigActivity.kt  ショートカットの設定画面
+│   ├── Timer.kt                 タイマーの状態と操作 / 設定 / 通知
+│   ├── TimerReceiver.kt         ボタン・発火・再起動の受け口
+│   ├── TimerRingService.kt      鳴らしている間だけ動く FGS
+│   ├── TimerRingingActivity.kt  完了画面 (停止 / 延長)
+│   ├── TimerWidgetProvider.kt   タイマーウィジェット
 │   ├── Ui.kt                    edge-to-edge の inset 処理
 │   └── MainActivity.kt          セットアップ画面
 └── res/                         XML レイアウト、vector drawable、文字列

@@ -23,6 +23,25 @@
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <!--
+      自前タイマー用。
+      - USE_EXACT_ALARM: インストール時に自動で付く exact alarm 権限。SCHEDULE_EXACT_ALARM と違い
+        本人の許可操作が要らない。Play では用途が制限されるが、ストア公開はしないので問題にならない。
+      - FOREGROUND_SERVICE(_MEDIA_PLAYBACK): 鳴らしている間だけ動く前景サービス。
+      - USE_FULL_SCREEN_INTENT: ロック中・画面オフのときに完了画面をそのまま開く。
+      - POST_NOTIFICATIONS: 残り時間と鳴動の通知。実行時に許可を求める。
+      - RECEIVE_BOOT_COMPLETED: 再起動中に消えたアラームを張り直す。
+      - REQUEST_IGNORE_BATTERY_OPTIMIZATIONS: 最適化を外す確認ダイアログを出すため。
+    -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!--
       Android 11+ のパッケージ可視性。時計アプリの解決と、ショートカットに置くアプリの
       一覧取得に必要。MAIN + LAUNCHER の intent を書けばランチャーに出るアプリが見えるので、
       制限付きの QUERY_ALL_PACKAGES は使わない。
@@ -143,6 +162,47 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_next_alarm_info" />
+        </receiver>
+
+        <!--
+          タイマー。操作・発火・再起動はすべて TimerReceiver が受ける。
+          外のアプリから止められないよう exported は false。BOOT_COMPLETED は system から
+          届くので、exported でなくても受けられる。
+        -->
+        <receiver
+            android:name=".TimerReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".TimerRingService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <!-- 完了画面。ロック画面の上に出し、他の画面の履歴には混ぜない。 -->
+        <activity
+            android:name=".TimerRingingActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:taskAffinity=""
+            android:turnScreenOn="true" />
+
+        <receiver
+            android:name=".TimerWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_timer_info" />
         </receiver>
     </application>
 </manifest>

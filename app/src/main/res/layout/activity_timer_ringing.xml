@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ringingRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/timer_done_title"
+        android:textSize="34sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/ringingDuration"
+        style="@style/Body"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="16sp" />
+
+    <Chronometer
+        android:id="@+id/ringingElapsed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFeatureSettings="tnum"
+        android:format="+%s"
+        android:textSize="48sp" />
+
+    <TextView
+        style="@style/Body"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/timer_extend_label" />
+
+    <LinearLayout
+        android:id="@+id/ringingExtends"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" />
+
+    <Button
+        android:id="@+id/btnRingingStop"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/timer_stop"
+        android:textSize="20sp" />
+</LinearLayout>

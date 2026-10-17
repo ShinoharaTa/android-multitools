@@ -1,6 +1,8 @@
 package net.shino3.qsmultitools
 
+import android.Manifest
 import android.app.Activity
+import android.app.NotificationManager
 import android.app.StatusBarManager
 import android.appwidget.AppWidgetManager
 import android.content.res.ColorStateList
@@ -8,6 +10,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Bundle
@@ -50,6 +53,13 @@ class MainActivity : Activity() {
 
     private lateinit var shortcutStatus: TextView
 
+    private lateinit var timerStatus: TextView
+    private lateinit var timerCurrent: TextView
+    private lateinit var timerPermNotifications: TextView
+    private lateinit var timerPermFullScreen: TextView
+    private lateinit var timerPermBattery: TextView
+    private lateinit var timerGrantBlock: View
+
     private lateinit var previewRoot: ViewGroup
     private lateinit var previewInner: ViewGroup
     private lateinit var previewHeader: TextView
@@ -74,6 +84,12 @@ class MainActivity : Activity() {
         widgetStatus = findViewById(R.id.widgetStatus)
         widgetCurrent = findViewById(R.id.widgetCurrent)
         shortcutStatus = findViewById(R.id.shortcutStatus)
+        timerStatus = findViewById(R.id.timerStatus)
+        timerCurrent = findViewById(R.id.timerCurrent)
+        timerPermNotifications = findViewById(R.id.timerPermNotifications)
+        timerPermFullScreen = findViewById(R.id.timerPermFullScreen)
+        timerPermBattery = findViewById(R.id.timerPermBattery)
+        timerGrantBlock = findViewById(R.id.timerGrantBlock)
         previewRoot = findViewById(R.id.widgetRoot)
         previewInner = findViewById(R.id.widgetInner)
         previewHeader = findViewById(R.id.widgetHeader)
@@ -100,11 +116,33 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.btnAddShortcut).setOnClickListener {
             requestPinWidget(AppShortcutWidgetProvider::class.java)
         }
+        findViewById<Button>(R.id.btnAddTimerWidget).setOnClickListener {
+            requestPinWidget(TimerWidgetProvider::class.java)
+        }
+        findViewById<Button>(R.id.btnTestTimer).setOnClickListener {
+            Timer.start(this, TEST_TIMER_MS)
+            refresh()
+        }
+        findViewById<Button>(R.id.btnAllowNotifications).setOnClickListener {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_NOTIFICATIONS)
+        }
+        findViewById<Button>(R.id.btnAllowFullScreen).setOnClickListener {
+            openAppSettings(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+        }
+        findViewById<Button>(R.id.btnAllowBattery).setOnClickListener {
+            openAppSettings(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+        }
         findViewById<Button>(R.id.btnRefresh).setOnClickListener { refresh() }
 
         setUpAddTileButtons()
         setUpStyleSpinners()
         setUpTimeoutSteps()
+        setUpTimerSettings()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_NOTIFICATIONS) refresh()
     }
 
     override fun onResume() {
@@ -158,6 +196,99 @@ class MainActivity : Activity() {
 
         // ショートカットも権限を使わないので、常に利用可能。
         render(shortcutStatus, FeatureStatus.AVAILABLE)
+
+        refreshTimer()
+    }
+
+    /**
+     * タイマーは通知・全画面通知・バッテリー最適化の 3 つが揃って初めて確実に鳴る。
+     * どれか欠けていても動きはするので「権限不足」として見せ、許可ボタンを出す。
+     */
+    private fun refreshTimer() {
+        val notifications = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        val fullScreen = getSystemService(NotificationManager::class.java)?.canUseFullScreenIntent() == true
+        val battery = Timer.isIgnoringBatteryOptimizations(this)
+        val ready = notifications && fullScreen && battery
+        render(timerStatus, if (ready) FeatureStatus.AVAILABLE else FeatureStatus.NEEDS_PERMISSION)
+
+        fun granted(ok: Boolean) = getString(if (ok) R.string.perm_granted else R.string.perm_denied)
+        timerPermNotifications.text = getString(R.string.timer_perm_notifications, granted(notifications))
+        timerPermFullScreen.text = getString(R.string.timer_perm_full_screen, granted(fullScreen))
+        timerPermBattery.text = getString(
+            R.string.timer_perm_battery,
+            getString(if (battery) R.string.battery_unrestricted else R.string.battery_optimized),
+        )
+        timerGrantBlock.visibility = if (ready) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.btnAllowNotifications).visibility = if (notifications) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.btnAllowFullScreen).visibility = if (fullScreen) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.btnAllowBattery).visibility = if (battery) View.GONE else View.VISIBLE
+
+        val state = Timer.state(this)
+        timerCurrent.text = when (state.phase) {
+            Timer.Phase.IDLE -> getString(R.string.timer_current_idle)
+            Timer.Phase.RUNNING -> getString(R.string.timer_current_running, Timer.formatDuration(state.totalMs))
+            Timer.Phase.RINGING -> getString(R.string.timer_current_ringing)
+        }
+    }
+
+    /** 開始ボタンの候補、鳴り終わり、バイブ。変えたらウィジェットにもすぐ反映する。 */
+    private fun setUpTimerSettings() {
+        val container = findViewById<LinearLayout>(R.id.timerPresetChecks)
+        val enabled = TimerSettings.presets(this).toMutableSet()
+        TimerSettings.PRESET_CANDIDATES.forEach { value ->
+            container.addView(
+                CheckBox(this).apply {
+                    text = Timer.formatDuration(value)
+                    isChecked = value in enabled
+                    setOnCheckedChangeListener { _, checked ->
+                        if (checked) enabled.add(value) else enabled.remove(value)
+                        TimerSettings.setPresets(this@MainActivity, enabled)
+                        // 1 つも残らなければ既定に戻るので、表示も実際の候補に合わせ直す。
+                        val actual = TimerSettings.presets(this@MainActivity).toSet()
+                        if (actual != enabled) {
+                            enabled.clear()
+                            enabled.addAll(actual)
+                            TimerSettings.PRESET_CANDIDATES.forEachIndexed { index, v ->
+                                (container.getChildAt(index) as? CheckBox)?.isChecked = v in actual
+                            }
+                        }
+                        TimerWidgetProvider.refresh(this@MainActivity)
+                    }
+                },
+            )
+        }
+
+        val modes = RingMode.entries
+        findViewById<Spinner>(R.id.spinnerRingMode).apply {
+            adapter = ArrayAdapter(
+                this@MainActivity,
+                android.R.layout.simple_spinner_item,
+                modes.map { getString(it.labelRes) },
+            ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            setSelection(modes.indexOf(TimerSettings.ringMode(this@MainActivity)), false)
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    TimerSettings.setRingMode(this@MainActivity, modes[position])
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+            }
+        }
+
+        findViewById<CheckBox>(R.id.checkTimerVibrate).apply {
+            isChecked = TimerSettings.vibrate(this@MainActivity)
+            setOnCheckedChangeListener { _, checked -> TimerSettings.setVibrate(this@MainActivity, checked) }
+        }
+    }
+
+    /** 全画面通知の許可画面やバッテリー最適化の確認ダイアログを、このアプリを指定して開く。 */
+    private fun openAppSettings(action: String) {
+        val withPackage = Intent(action, Uri.fromParts("package", packageName, null))
+        if (!start(withPackage) && !start(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", packageName, null)))) {
+            toast("設定画面を開けませんでした")
+        }
     }
 
     private fun render(view: TextView, status: FeatureStatus) {
@@ -264,6 +395,7 @@ class MainActivity : Activity() {
                     WidgetStyle.save(this@MainActivity, toStyle(values[position]))
                     updatePreview()
                     NextAlarmWidgetProvider.refresh(this@MainActivity)
+                    TimerWidgetProvider.refresh(this@MainActivity)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -384,5 +516,8 @@ class MainActivity : Activity() {
     companion object {
         /** 見本の枠の大きさ。レイアウト側の 170dp x 76dp と合わせてある。 */
         private val PREVIEW_SIZE = SizeF(170f, 76f)
+
+        private const val TEST_TIMER_MS = 10_000L
+        private const val REQ_NOTIFICATIONS = 1
     }
 }
