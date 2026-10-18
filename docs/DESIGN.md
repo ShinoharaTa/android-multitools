@@ -104,9 +104,10 @@ SecurityException は PendingIntent を発火する system_server 側で起き�
   `Tile.setSubtitle` (API 29 から) と Active/Inactive の色で見せる。
   `setStateDescription` と `contentDescription` にも同じ内容を入れてある。
 
-## 4. アラーム一覧ウィジェットを作らなかった理由
+## 4. 時計アプリのアラームを一覧できない理由
 
-「設定済みアラームの一覧を出して個別に ON/OFF する」ウィジェットは、公開 API では作れない。
+「時計アプリに設定済みのアラームを一覧にして、個別に ON/OFF する」ウィジェットは、公開 API では作れない。
+そこでアラームそのものをこのアプリで持つことにした (8 章)。
 調べた結果は次のとおり。
 
 **時計アプリのアラーム DB は外から読めない。**
@@ -268,7 +269,7 @@ extra の違いだけでは同一視され、最後に作ったものに上書�
 
 ### 鳴らす
 
-鳴らしている間だけ `TimerRingService` (FGS, mediaPlayback) を動かす。
+鳴らしている間だけ `RingService` (FGS, mediaPlayback) を動かす。アラームと共用で、詳しくは 8 章。
 既定のアラーム音を `MediaPlayer` でループ再生し、`AudioAttributes.USAGE_ALARM` を付ける。
 バイブにも `VibrationAttributes.USAGE_ALARM` を付ける。FGS の通知は全画面インテント付きで出す。
 ロック中・画面オフなら `TimerRingingActivity` が直接開き (`showWhenLocked` / `turnScreenOn`)、
@@ -295,11 +296,91 @@ FGS を起動できなかったときの保険として、アラーム音付き�
 延長の直後に古いアラームが届くことがある。そのため `fire()` では残り時間を見て、
 まだ 1 秒以上残っていれば張り直すだけにしてある。
 
-## 8. プロジェクト構成
+## 8. 自前のアラーム
+
+時計アプリのアラームは外から一覧も ON/OFF もできない (4 章)。そこでアラームをこのアプリで持つ。
+鳴らす仕組みはタイマーのものを共用する。
+
+### データ
+
+1 件は「時・分・曜日のビット列・ラベル・ON/OFF・スヌーズの再鳴動時刻」。曜日が 0 なら 1 回きり。
+全件を JSON にして SharedPreferences に置く。件数は多くて十数件なので、DB は要らない。
+
+保存先は **device protected storage** (`createDeviceProtectedStorageContext`)。
+再起動した直後は、一度ロックを解除するまで通常の保存領域が読めない。Galaxy は既定で深夜に自動再起動
+することがあり、通常の保存領域に置くと、朝ロックを解除するまでアラームが張られない。
+receiver・サービス・鳴動画面を `directBootAware` にして `LOCKED_BOOT_COMPLETED` を受け、
+ロック解除前でも張り直して鳴らせるようにした。タイマーの状態と設定も同じ領域に移した
+(0.3.0-test1 からの更新時に `moveSharedPreferencesFrom` で移す)。
+
+### 張り方
+
+AlarmManager に張るのは、全アラームの中で次に鳴る 1 回だけ。同じ時刻のものはまとめる。
+何かが変わるたびに計算し直して張り直す。張った時刻と、そのときに鳴らすアラームの ID も保存する。
+発火したときに「どれが鳴ったか」を、時刻から逆算しなくて済むようにするため。
+
+タイマーと違い、こちらは `setAlarmClock` を使う。最も確実に Doze を抜けるうえ、
+ステータスバーの時計アイコンと `getNextAlarmClock()` にも載る。
+つまり既存の「次のアラーム」ウィジェットに、時計アプリのものと同じように出る。
+
+再起動・時刻合わせ・タイムゾーン変更では張り直す。「7:00」が指す瞬間が変わるため。
+再起動の後始末は `LOCKED_BOOT_COMPLETED` と `BOOT_COMPLETED` の両方で届く。2 回目をやり直すと、
+その間に鳴り始めたアラームを「再起動で止まったもの」と取り違える。そこで `Settings.Global.BOOT_COUNT` を
+覚えておき、同じ起動の 2 回目は張り直しだけにしている。
+
+電源が切れている間に過ぎたアラームは、鳴らさずに「鳴らせなかった」通知を出す。
+1 回きりのものは OFF にする。放っておくと翌日の同じ時刻に鳴ってしまうため。
+
+### 鳴った後
+
+- 発火: 1 回きりのものはこの時点で OFF にし、スヌーズも消す。こうしておくと、
+  鳴っている最中に次の 1 回を張り直しても、今鳴っているものをもう一度拾わない
+- スヌーズ: 鳴っているもの全部に「今 + N 分」の再鳴動時刻を付ける。スヌーズ中は OFF でも鳴る
+  (1 回きりのものは発火時に OFF になっているため)
+- 停止: 鳴っている扱いを解くだけ。繰り返しのものは次の回に、1 回きりのものは OFF のまま
+- 自動スヌーズ: 「N分で自動スヌーズ」なら、上限まで鳴ったところでスヌーズと同じ扱いにする。
+  止めずに寝続けた場合に、黙って鳴り止むよりは鳴り直す方がよいため
+
+### 鳴らす仕組みの共用
+
+`RingService` はアラームとタイマーの両方を鳴らす。自分では状態を持たず、`RingSource` (ALARM / TIMER) に
+「今鳴らすべきか」を毎回聞く。両方が同時に鳴っても音とバイブは 1 本だけにし、前景サービスの通知は
+アラームを優先する。もう片方の鳴動通知も別に出す。状態を変えた側は必ず `RingService.update()` を呼ぶ。
+鳴らすものが無ければサービスを止め、あれば起動するか描き直す。
+
+`startForegroundService` を頼んでから `onStartCommand` が走るまでの間に止められることがある。
+そのときも `startForeground` は一度呼ばないと落とされる。鳴動の通知を使うと完了画面が一瞬開いてしまうので、
+全画面インテントの無い仮の通知を出してすぐに止める。
+
+既定のアラーム音が読めないとき (着信音の保存先がロック解除前で読めない等) は、
+`ToneGenerator` の電子音を `STREAM_ALARM` で鳴らす。無音にはしない。
+
+### 一覧ウィジェット
+
+`RemoteViewsService` によるコレクションは使わず、行を `addView` で並べる。入りきらない分は
+「他 N 件」にまとめる。スクロールはできないが、行ごとの ON/OFF ボタンに普通の PendingIntent が
+使えるので、仕組みが単純になる。
+
+ウィジェットには「あと N 分」を出さない。ウィジェットは時間とともに自動では描き直されないので、
+相対表示はすぐ古くなる (エミュレータで 9 時間放置して確認した)。次のアラームは「明日 7:00」のような
+絶対時刻で出す。「今日 / 明日」は日付が変わると古くなるが、`ACTION_DATE_CHANGED` は Android 8 以降
+マニフェストの receiver に届かない。そこで毎日 0:00:01 に非 wakeup の `RTC` アラームを張り、
+両方のウィジェットを描き直す。鳴らすものではないので、寝ている間に過ぎても次に起きたときに届けばよい。
+
+ボタンの色は tint で付ける。tint は下地の色のアルファに掛かるので、半透明の下地に tint すると薄くなりすぎる。
+tint するときは不透明な下地 (`bg_widget_pill`) に差し替えてから色を付ける。
+
+### アラームタイルとの関係
+
+アラーム一覧の画面は `SHOW_ALARMS` も受ける。アラームタイルの「開き先」でこのアプリを選べば、
+ここに直行する。`AlarmClock` の javadoc に従い、受け口は `SET_ALARM` で保護した。
+自動判定 (`Alarms.explicit`) ではこのアプリを選ばない。これまでどおり Galaxy の時計アプリが開く。
+
+## 9. プロジェクト構成
 
 ```
 app/src/main/
-├── AndroidManifest.xml          権限宣言 / <queries> / TileService 3 つ / ウィジェット 3 つ
+├── AndroidManifest.xml          権限宣言 / <queries> / TileService 3 つ / ウィジェット 4 つ
 ├── java/net/shino3/qsmultitools/
 │   ├── Features.kt              UsbDebug / ScreenTimeout / Alarms の判定と操作。UI を持たない
 │   ├── BaseTileService.kt       タイル共通処理 (状態反映、activity 起動、ロック解除、トースト)
@@ -313,7 +394,14 @@ app/src/main/
 │   ├── AppShortcutConfigActivity.kt  ショートカットの設定画面
 │   ├── Timer.kt                 タイマーの状態と操作 / 設定 / 通知
 │   ├── TimerReceiver.kt         ボタン・発火・再起動の受け口
-│   ├── TimerRingService.kt      鳴らしている間だけ動く FGS
+│   ├── RingService.kt           鳴らしている間だけ動く FGS (アラームとタイマーで共用)
+│   ├── Alarm.kt                 アラームのデータ / 保存 / 張り方 / 設定 / 通知
+│   ├── AlarmReceiver.kt         発火・スヌーズ・停止・ON/OFF・再起動・時刻変更の受け口
+│   ├── AlarmListActivity.kt     アラーム一覧と鳴り方の設定
+│   ├── AlarmEditActivity.kt     追加・編集
+│   ├── AlarmRingingActivity.kt  鳴動画面 (スヌーズ / 停止)
+│   ├── AlarmWidgetProvider.kt   アラーム一覧ウィジェット
+│   ├── Storage.kt               ロック解除前でも読める保存領域
 │   ├── TimerRingingActivity.kt  完了画面 (停止 / 延長)
 │   ├── TimerWidgetProvider.kt   タイマーウィジェット
 │   ├── Ui.kt                    edge-to-edge の inset 処理

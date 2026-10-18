@@ -179,6 +179,12 @@ fun RemoteViews.applyFrame(
     tintBackground(innerId, palette.background)
 }
 
+/** ボタンを不透明な下地に差し替えてから色を付ける。半透明の下地に tint すると薄くなりすぎるため。 */
+fun RemoteViews.tintPill(viewId: Int, color: Int) {
+    setInt(viewId, "setBackgroundResource", R.drawable.bg_widget_pill)
+    tintBackground(viewId, color)
+}
+
 fun RemoteViews.tintBackground(viewId: Int, color: Int) =
     setColorStateList(viewId, "setBackgroundTintList", ColorStateList.valueOf(color))
 

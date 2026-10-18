@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.app.NotificationManager
 import android.app.StatusBarManager
-import android.appwidget.AppWidgetManager
 import android.content.res.ColorStateList
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -60,6 +59,9 @@ class MainActivity : Activity() {
     private lateinit var timerPermBattery: TextView
     private lateinit var timerGrantBlock: View
 
+    private lateinit var ownAlarmStatus: TextView
+    private lateinit var ownAlarmCount: TextView
+
     private lateinit var previewRoot: ViewGroup
     private lateinit var previewInner: ViewGroup
     private lateinit var previewHeader: TextView
@@ -90,6 +92,11 @@ class MainActivity : Activity() {
         timerPermFullScreen = findViewById(R.id.timerPermFullScreen)
         timerPermBattery = findViewById(R.id.timerPermBattery)
         timerGrantBlock = findViewById(R.id.timerGrantBlock)
+        ownAlarmStatus = findViewById(R.id.ownAlarmStatus)
+        ownAlarmCount = findViewById(R.id.ownAlarmCount)
+
+        // 0.3.0-test1 までタイマーの設定は通常の保存領域に置いていた。ロック解除前でも読める側へ移す。
+        migrateToBootSafePrefs("timer", "timer_settings")
         previewRoot = findViewById(R.id.widgetRoot)
         previewInner = findViewById(R.id.widgetInner)
         previewHeader = findViewById(R.id.widgetHeader)
@@ -131,6 +138,12 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.btnAllowBattery).setOnClickListener {
             openAppSettings(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+        }
+        findViewById<Button>(R.id.btnOpenAlarmList).setOnClickListener {
+            start(Intent(this, AlarmListActivity::class.java))
+        }
+        findViewById<Button>(R.id.btnAddAlarmWidget).setOnClickListener {
+            requestPinWidget(AlarmWidgetProvider::class.java)
         }
         findViewById<Button>(R.id.btnRefresh).setOnClickListener { refresh() }
 
@@ -211,6 +224,10 @@ class MainActivity : Activity() {
         val battery = Timer.isIgnoringBatteryOptimizations(this)
         val ready = notifications && fullScreen && battery
         render(timerStatus, if (ready) FeatureStatus.AVAILABLE else FeatureStatus.NEEDS_PERMISSION)
+        // 自前のアラームも同じ仕組みで鳴らすので、必要な許可も同じ。
+        render(ownAlarmStatus, if (ready) FeatureStatus.AVAILABLE else FeatureStatus.NEEDS_PERMISSION)
+        val alarms = AlarmStore.all(this)
+        ownAlarmCount.text = getString(R.string.own_alarm_count, alarms.size, alarms.count { it.enabled })
 
         fun granted(ok: Boolean) = getString(if (ok) R.string.perm_granted else R.string.perm_denied)
         timerPermNotifications.text = getString(R.string.timer_perm_notifications, granted(notifications))
@@ -396,6 +413,7 @@ class MainActivity : Activity() {
                     updatePreview()
                     NextAlarmWidgetProvider.refresh(this@MainActivity)
                     TimerWidgetProvider.refresh(this@MainActivity)
+                    AlarmWidgetProvider.refresh(this@MainActivity)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -454,17 +472,6 @@ class MainActivity : Activity() {
     }
 
     private fun dp(value: Float): Int = (value * resources.displayMetrics.density).toInt()
-
-    private fun requestPinWidget(providerClass: Class<*>) {
-        val manager = getSystemService(AppWidgetManager::class.java)
-        val provider = ComponentName(this, providerClass)
-        val requested = manager != null &&
-            manager.isRequestPinAppWidgetSupported &&
-            runCatching { manager.requestPinAppWidget(provider, null, null) }.getOrDefault(false)
-        if (!requested) {
-            toast(getString(R.string.widget_pin_unsupported))
-        }
-    }
 
     // ---- クイック設定への追加 -------------------------------------------
 

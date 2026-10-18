@@ -1,7 +1,11 @@
 package net.shino3.qsmultitools
 
+import android.app.Activity
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.view.View
 import android.view.WindowInsets
+import android.widget.Toast
 
 /**
  * targetSdk 35 以降はウィンドウがシステムバーの下まで広がる (edge-to-edge)。
@@ -22,4 +26,16 @@ fun View.padForSystemBars() {
         insets
     }
     requestApplyInsets()
+}
+
+/** ホーム画面へのウィジェット追加をリクエストする。対応していないホーム画面アプリならトーストで案内する。 */
+fun Activity.requestPinWidget(providerClass: Class<*>) {
+    val manager = getSystemService(AppWidgetManager::class.java)
+    val provider = ComponentName(this, providerClass)
+    val requested = manager != null &&
+        manager.isRequestPinAppWidgetSupported &&
+        runCatching { manager.requestPinAppWidget(provider, null, null) }.getOrDefault(false)
+    if (!requested) {
+        Toast.makeText(this, getString(R.string.widget_pin_unsupported), Toast.LENGTH_SHORT).show()
+    }
 }

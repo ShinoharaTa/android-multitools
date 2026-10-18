@@ -171,21 +171,26 @@
         -->
         <receiver
             android:name=".TimerReceiver"
+            android:directBootAware="true"
             android:exported="false">
             <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 
+        <!-- 鳴らしている間だけ動く。タイマーとアラームで共用。ロック解除前でも鳴らせるよう directBootAware。 -->
         <service
-            android:name=".TimerRingService"
+            android:name=".RingService"
+            android:directBootAware="true"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
         <!-- 完了画面。ロック画面の上に出し、他の画面の履歴には混ぜない。 -->
         <activity
             android:name=".TimerRingingActivity"
+            android:directBootAware="true"
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleInstance"
@@ -203,6 +208,66 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_timer_info" />
+        </receiver>
+
+        <!--
+          自前のアラーム。発火・スヌーズ・停止・ON/OFF・再起動・時刻変更をすべて AlarmReceiver が受ける。
+          再起動直後のロック解除前でも張り直せるよう LOCKED_BOOT_COMPLETED を受け、directBootAware にする。
+        -->
+        <receiver
+            android:name=".AlarmReceiver"
+            android:directBootAware="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+          アラーム一覧。SHOW_ALARMS も受けるので、アラームタイルの「開き先」でこのアプリを選べば
+          ここに直行する。AlarmClock の javadoc に従い SET_ALARM で保護する。
+          自動判定ではこのアプリを選ばない (Features.kt の Alarms.explicit)。
+        -->
+        <activity
+            android:name=".AlarmListActivity"
+            android:exported="true"
+            android:label="@string/alarm_list_title"
+            android:permission="com.android.alarm.permission.SET_ALARM">
+            <intent-filter>
+                <action android:name="android.intent.action.SHOW_ALARMS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".AlarmEditActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".AlarmRingingActivity"
+            android:directBootAware="true"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:taskAffinity=""
+            android:turnScreenOn="true" />
+
+        <receiver
+            android:name=".AlarmWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_alarm_list_info" />
         </receiver>
     </application>
 </manifest>

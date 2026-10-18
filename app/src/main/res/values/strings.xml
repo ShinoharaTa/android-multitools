@@ -145,7 +145,56 @@
     <string name="timer_cancel_short">×</string>
     <string name="channel_timer_running">タイマー (動作中)</string>
     <string name="channel_timer_ringing">タイマー (鳴動)</string>
-    <string name="channel_timer_fallback">タイマー (予備の鳴動)</string>
+    <string name="channel_ring_fallback">鳴動 (予備)</string>
     <string name="channel_timer_finished">タイマー (終了のお知らせ)</string>
+
+    <!-- アラーム (自前) -->
+    <string name="section_own_alarm">アラーム (このアプリ)</string>
+    <string name="own_alarm_desc">時計アプリを使わずに、このアプリ自身が鳴らすアラームです。曜日の繰り返し、ラベル、スヌーズに対応し、ホーム画面のウィジェットから 1 件ずつ ON/OFF できます。鳴らす仕組みと必要な許可はタイマーと共通です。</string>
+    <string name="own_alarm_count">登録: %1$d 件 (ON: %2$d 件)</string>
+    <string name="btn_open_alarm_list">アラーム一覧を開く</string>
+    <string name="btn_add_alarm_widget">アラーム一覧ウィジェットを追加</string>
+    <string name="alarm_list_title">アラーム</string>
+    <string name="alarm_list_empty">アラームはまだありません</string>
+    <string name="alarm_add_button">＋ アラームを追加</string>
+    <string name="alarm_add_title">アラームを追加</string>
+    <string name="alarm_edit_title">アラームを編集</string>
+    <string name="alarm_repeat_label">繰り返す曜日 (選ばなければ 1 回だけ)</string>
+    <string name="alarm_label_label">ラベル</string>
+    <string name="alarm_label_hint">起床、ゴミ出し など (任意)</string>
+    <string name="alarm_save">保存</string>
+    <string name="alarm_delete">削除</string>
+    <string name="alarm_delete_confirm">このアラームを削除しますか?</string>
+    <string name="alarm_every_day">毎日</string>
+    <string name="alarm_weekdays">平日</string>
+    <string name="alarm_weekend">週末</string>
+    <string name="alarm_once">1 回だけ</string>
+    <string name="alarm_until">あと %1$s</string>
+    <string name="alarm_next">次は %1$s (%2$s)</string>
+    <string name="alarm_next_none">ON のアラームはありません</string>
+    <string name="alarm_snoozing">スヌーズ中 (%1$s に再開)</string>
+    <string name="alarm_snoozing_short">スヌーズ %1$s</string>
+    <string name="alarm_saved">%1$s に鳴ります (%2$s)</string>
+    <string name="alarm_on">ON</string>
+    <string name="alarm_off">OFF</string>
+    <string name="alarm_settings_title">鳴り方</string>
+    <string name="alarm_snooze_label">スヌーズの長さ</string>
+    <string name="alarm_settings_hint">「N分で自動スヌーズ」にすると、止めずに放っておいたときはスヌーズと同じ扱いで鳴り直します。</string>
+    <string name="alarm_ring_1m">1分で自動スヌーズ</string>
+    <string name="alarm_ring_3m">3分で自動スヌーズ</string>
+    <string name="alarm_ring_5m">5分で自動スヌーズ</string>
+    <string name="alarm_ring_10m">10分で自動スヌーズ</string>
+    <string name="alarm_snooze_n">スヌーズ (%1$s)</string>
+    <string name="alarm_ringing_title">アラーム %1$s</string>
+    <string name="alarm_ringing_text">アラームが鳴っています</string>
+    <string name="alarm_missed_title">鳴らせなかったアラーム</string>
+    <string name="alarm_missed_text">%1$s のアラームは電源が切れている間に過ぎました</string>
+    <string name="alarm_widget_description">このアプリのアラームの一覧。1 件ずつ ON/OFF できます。</string>
+    <string name="alarm_widget_empty">アラームはありません。＋ で追加できます</string>
+    <string name="alarm_widget_none_on">すべて OFF</string>
+    <string name="alarm_widget_next">次 %1$s %2$s</string>
+    <string name="alarm_widget_more">他 %1$d 件 (タップで一覧)</string>
+    <string name="channel_alarm_ringing">アラーム (鳴動)</string>
+    <string name="channel_alarm_missed">アラーム (鳴らせなかったもの)</string>
 
 </resources>

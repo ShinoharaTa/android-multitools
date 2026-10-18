@@ -164,6 +164,38 @@
                 android:text="@string/btn_test" />
         </LinearLayout>
 
+        <!-- アラーム (自前) -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_own_alarm" />
+
+            <TextView
+                android:id="@+id/ownAlarmStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                android:id="@+id/ownAlarmCount"
+                style="@style/Body" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/own_alarm_desc" />
+
+            <Button
+                android:id="@+id/btnOpenAlarmList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_open_alarm_list" />
+
+            <Button
+                android:id="@+id/btnAddAlarmWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_alarm_widget" />
+        </LinearLayout>
+
         <!-- タイマー -->
         <LinearLayout style="@style/Card">
 

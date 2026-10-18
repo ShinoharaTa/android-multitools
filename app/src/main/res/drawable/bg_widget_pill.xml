@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  色を tint で付けるときのボタン背景。tint は元の色のアルファに掛かるので、
+  半透明の bg_widget_button に tint すると薄くなりすぎる。こちらは不透明にしておく。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <corners android:radius="12dp" />
+</shape>

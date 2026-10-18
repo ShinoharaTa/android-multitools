@@ -28,6 +28,8 @@ class NextAlarmWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
         appWidgetIds.forEach { render(context, manager, it) }
+        // 「今日 / 明日」を日付の変わり目で描き直す予約。アラーム一覧ウィジェットと共用。
+        AlarmScheduler.scheduleMidnightRefresh(context)
     }
 
     /** リサイズされたとき。寸法が変わったので文字サイズを計算し直す。 */

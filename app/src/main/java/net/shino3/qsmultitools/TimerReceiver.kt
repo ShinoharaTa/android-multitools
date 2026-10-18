@@ -21,9 +21,10 @@ class TimerReceiver : BroadcastReceiver() {
             ACTION_EXTEND -> durationMs?.let { Timer.extend(context, it) }
             ACTION_CANCEL -> Timer.cancel(context)
             ACTION_FIRE -> Timer.fire(context)
+            Intent.ACTION_LOCKED_BOOT_COMPLETED,
             Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_MY_PACKAGE_REPLACED,
-            -> Timer.onBoot(context)
+            -> if (context.firstTimeThisBoot("timer")) Timer.onBoot(context)
+            Intent.ACTION_MY_PACKAGE_REPLACED -> Timer.onBoot(context)
         }
     }
 

@@ -109,7 +109,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
                 button.setOnClickPendingIntent(R.id.timerButton, intent)
                 style.palette?.let {
                     button.setTextColor(R.id.timerButton, it.text)
-                    button.tintBackground(R.id.timerButton, (it.text and 0x00FFFFFF) or BUTTON_ALPHA)
+                    button.tintPill(R.id.timerButton, (it.text and 0x00FFFFFF) or BUTTON_ALPHA)
                 }
                 views.addView(container, button)
             }

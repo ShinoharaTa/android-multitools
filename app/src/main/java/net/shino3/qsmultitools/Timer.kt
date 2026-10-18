@@ -16,7 +16,7 @@ import android.os.SystemClock
 /**
  * 自前のタイマー。同時に動かすのは 1 本だけ。
  *
- * 状態は SharedPreferences に置く。ウィジェット・通知・完了画面はどれもここを読んで描くだけで、
+ * 状態は SharedPreferences (ロック解除前でも読める側, [bootSafePrefs]) に置く。ウィジェット・通知・完了画面はどれもここを読んで描くだけで、
  * 状態を持つのはこのオブジェクトだけにしてある。
  *
  * 終了時刻は elapsedRealtime 基準で持つ。時刻合わせやタイムゾーン変更の影響を受けないため。
@@ -46,7 +46,7 @@ object Timer {
     private const val KEY_TOTAL = "total"
 
     fun state(context: Context): State {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val prefs = context.bootSafePrefs(PREFS)
         val phase = prefs.getString(KEY_PHASE, null)
             ?.let { runCatching { Phase.valueOf(it) }.getOrNull() } ?: Phase.IDLE
         return State(
@@ -59,7 +59,7 @@ object Timer {
 
     private fun save(context: Context, state: State) {
         // 状態の書き込みの直後にアラームを張るので、apply ではなく commit で確実に残す。
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        context.bootSafePrefs(PREFS).edit()
             .putString(KEY_PHASE, state.phase.name)
             .putLong(KEY_END_ELAPSED, state.endElapsed)
             .putLong(KEY_END_WALL, state.endWall)
@@ -71,7 +71,6 @@ object Timer {
 
     /** 新しく開始する。動いていても鳴っていても、今のものは捨てて置き換える。 */
     fun start(context: Context, durationMs: Long) {
-        TimerRingService.stop(context)
         val now = SystemClock.elapsedRealtime()
         val state = State(
             phase = Phase.RUNNING,
@@ -81,6 +80,8 @@ object Timer {
         )
         save(context, state)
         schedule(context, state)
+        // 鳴っているところに新しく始めた場合は、これで音が止まる。
+        RingService.update(context)
         changed(context)
     }
 
@@ -93,7 +94,6 @@ object Timer {
         when (current.phase) {
             Phase.IDLE -> return
             Phase.RINGING -> {
-                TimerRingService.stop(context)
                 val state = current.copy(
                     phase = Phase.RUNNING,
                     endElapsed = SystemClock.elapsedRealtime() + durationMs,
@@ -101,6 +101,7 @@ object Timer {
                 )
                 save(context, state)
                 schedule(context, state)
+                RingService.update(context)
             }
             Phase.RUNNING -> {
                 val state = current.copy(
@@ -117,8 +118,8 @@ object Timer {
     /** 動いていても鳴っていても止めて、待機に戻す。 */
     fun cancel(context: Context) {
         unschedule(context)
-        TimerRingService.stop(context)
         save(context, State(Phase.IDLE, 0, 0, 0))
+        RingService.update(context)
         context.getSystemService(NotificationManager::class.java)?.cancel(NOTIFY_RUNNING)
         changed(context)
     }
@@ -134,7 +135,7 @@ object Timer {
         }
         save(context, current.copy(phase = Phase.RINGING))
         context.getSystemService(NotificationManager::class.java)?.cancel(NOTIFY_RUNNING)
-        TimerRingService.start(context)
+        RingService.update(context)
         changed(context)
     }
 
@@ -142,6 +143,7 @@ object Timer {
     fun finishedSilently(context: Context) {
         val total = state(context).totalMs
         save(context, State(Phase.IDLE, 0, 0, 0))
+        RingService.update(context)
         TimerNotifications.postFinished(context, total, missed = false)
         changed(context)
     }
@@ -281,7 +283,7 @@ object TimerSettings {
     private const val KEY_VIBRATE = "vibrate"
 
     fun presets(context: Context): List<Long> {
-        val saved = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val saved = context.bootSafePrefs(PREFS)
             .getStringSet(KEY_PRESETS, null)
             ?.mapNotNull { it.toLongOrNull() }
             ?.filter { it in PRESET_CANDIDATES }
@@ -290,26 +292,26 @@ object TimerSettings {
     }
 
     fun setPresets(context: Context, values: Set<Long>) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        context.bootSafePrefs(PREFS).edit()
             .putStringSet(KEY_PRESETS, values.map { it.toString() }.toSet())
             .apply()
     }
 
     fun ringMode(context: Context): RingMode =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_RING_MODE, null)
+        context.bootSafePrefs(PREFS).getString(KEY_RING_MODE, null)
             ?.let { runCatching { RingMode.valueOf(it) }.getOrNull() } ?: RingMode.UNTIL_STOPPED
 
     fun setRingMode(context: Context, mode: RingMode) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        context.bootSafePrefs(PREFS).edit()
             .putString(KEY_RING_MODE, mode.name)
             .apply()
     }
 
     fun vibrate(context: Context): Boolean =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_VIBRATE, true)
+        context.bootSafePrefs(PREFS).getBoolean(KEY_VIBRATE, true)
 
     fun setVibrate(context: Context, value: Boolean) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        context.bootSafePrefs(PREFS).edit()
             .putBoolean(KEY_VIBRATE, value)
             .apply()
     }
@@ -321,18 +323,20 @@ object TimerSettings {
  * - 動作中: 静かな常駐通知。残り時間は Chronometer のカウントダウンで OS に描かせるので、
  *   毎秒の更新はしない。
  * - 鳴動中: 全画面インテント付き。ロック中・画面オフなら完了画面がそのまま開き、
- *   使用中ならヘッドアップ通知として出る。音は [TimerRingService] が鳴らすのでチャンネルは無音。
+ *   使用中ならヘッドアップ通知として出る。音は [RingService] が鳴らすのでチャンネルは無音。
  * - 終了: 自動停止で鳴り終わった、または再起動中に終わっていたときに残す。
  */
 object TimerNotifications {
 
     private const val CHANNEL_RUNNING = "timer_running"
     private const val CHANNEL_RINGING = "timer_ringing"
-    private const val CHANNEL_FALLBACK = "timer_fallback"
+    const val CHANNEL_FALLBACK = "ring_fallback"
     private const val CHANNEL_FINISHED = "timer_finished"
 
     fun ensureChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        // テスト版 0.3.0-test1 で作っていたタイマー専用の予備チャンネル。共用に置き換えた。
+        manager.deleteNotificationChannel("timer_fallback")
         manager.createNotificationChannels(
             listOf(
                 NotificationChannel(
@@ -351,9 +355,10 @@ object TimerNotifications {
                     setShowBadge(false)
                 },
                 // FGS を起動できなかったときの保険。チャンネル自体にアラーム音を持たせる。
+                // タイマーとアラームで共用する。
                 NotificationChannel(
                     CHANNEL_FALLBACK,
-                    context.getString(R.string.channel_timer_fallback),
+                    context.getString(R.string.channel_ring_fallback),
                     NotificationManager.IMPORTANCE_HIGH,
                 ).apply {
                     setSound(alarmSound(), alarmAudioAttributes())
@@ -390,6 +395,15 @@ object TimerNotifications {
         notify(context, Timer.NOTIFY_RUNNING, notification)
     }
 
+    /** [RingService] が鳴らす前に止められたときだけ使う、中身の無い通知。 */
+    fun placeholder(context: Context): Notification {
+        ensureChannels(context)
+        return Notification.Builder(context, CHANNEL_RUNNING)
+            .setSmallIcon(R.drawable.ic_timer)
+            .setContentTitle(context.getString(R.string.app_name))
+            .build()
+    }
+
     /** 鳴動中の通知。FGS の通知としても、保険の通知としても使う。 */
     fun ringing(context: Context, fallback: Boolean): Notification {
         ensureChannels(context)
@@ -409,6 +423,8 @@ object TimerNotifications {
             .setShowWhen(true)
             .setUsesChronometer(true)
             .setOngoing(true)
+            // FGS の通知は状態が変わるたびに出し直すので、そのたびに鳴らないようにする。
+            .setOnlyAlertOnce(true)
             .setCategory(Notification.CATEGORY_ALARM)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(fullScreen, true)

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/alarmListScroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            style="@style/ScreenTitle"
+            android:text="@string/alarm_list_title" />
+
+        <TextView
+            android:id="@+id/alarmListNext"
+            style="@style/Body" />
+
+        <Button
+            android:id="@+id/btnAlarmAdd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/alarm_add_button" />
+
+        <TextView
+            android:id="@+id/alarmListEmpty"
+            style="@style/Body"
+            android:paddingTop="16dp"
+            android:gravity="center_horizontal"
+            android:text="@string/alarm_list_empty" />
+
+        <LinearLayout
+            android:id="@+id/alarmList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/alarm_settings_title" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/alarm_snooze_label" />
+
+            <Spinner
+                android:id="@+id/spinnerSnooze"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/timer_ring_mode_label" />
+
+            <Spinner
+                android:id="@+id/spinnerAlarmRingMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp" />
+
+            <CheckBox
+                android:id="@+id/checkAlarmVibrate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:text="@string/timer_vibrate" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/alarm_settings_hint" />
+
+            <Button
+                android:id="@+id/btnAlarmAddWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_alarm_widget" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

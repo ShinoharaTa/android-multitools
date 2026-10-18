@@ -169,6 +169,7 @@ object Alarms {
 
     private const val SAMSUNG_CLOCK = "com.sec.android.app.clockpackage"
     private const val AOSP_CLOCK = "com.google.android.deskclock"
+    private const val OWN_PACKAGE = "net.shino3.qsmultitools"
     private const val PREFS = "alarm_target"
     private const val KEY_COMPONENT = "component"
 
@@ -241,8 +242,11 @@ object Alarms {
                 PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong()),
             )
         }.getOrDefault(emptyList())
-        val pick = candidates.firstOrNull { it.activityInfo.packageName == SAMSUNG_CLOCK }
-            ?: candidates.firstOrNull()
+        // 自分 (自前アラームの一覧) は自動では選ばない。選びたいときは開き先で明示的に指定してもらう。
+        // 指定されたときは setPackage 付きで来るので、候補は自分だけになり、ここで弾かれない。
+        val others = candidates.filter { it.activityInfo.packageName != OWN_PACKAGE || intent.`package` != null }
+        val pick = others.firstOrNull { it.activityInfo.packageName == SAMSUNG_CLOCK }
+            ?: others.firstOrNull()
             ?: return null
         return Intent(intent).setClassName(pick.activityInfo.packageName, pick.activityInfo.name)
     }
