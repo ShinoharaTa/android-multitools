@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import android.widget.Button
 import android.widget.Chronometer
 import android.widget.LinearLayout
@@ -25,10 +27,14 @@ class TimerRingingActivity : Activity() {
         override fun onReceive(context: Context, intent: Intent) = finishIfNotRinging()
     }
 
+    /** 鳴っている間は戻るで閉じない。閉じると鳴ったまま画面だけ消えて、通知を探す羽目になる。 */
+    private val swallowBack = OnBackInvokedCallback { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setShowWhenLocked(true)
         setTurnScreenOn(true)
+        onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, swallowBack)
         setContentView(R.layout.activity_timer_ringing)
         findViewById<android.view.View>(R.id.ringingRoot).padForSystemBars()
 
@@ -70,6 +76,11 @@ class TimerRingingActivity : Activity() {
     override fun onStop() {
         unregisterReceiver(changed)
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        onBackInvokedDispatcher.unregisterOnBackInvokedCallback(swallowBack)
+        super.onDestroy()
     }
 
     private fun finishIfNotRinging() {

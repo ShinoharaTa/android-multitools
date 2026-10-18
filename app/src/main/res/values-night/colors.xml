@@ -11,6 +11,5 @@
     <color name="widget_text_sub">#FFB4B8BE</color>
     <color name="widget_border">#33FFFFFF</color>
     <color name="widget_button_bg">#26FFFFFF</color>
-    <color name="widget_on_bg">#FF8AB4F8</color>
-    <color name="widget_on_text">#FF0B1A33</color>
+    <color name="banner_warn_bg">#26F0BE5A</color>
 </resources>

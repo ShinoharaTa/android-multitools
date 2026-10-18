@@ -6,7 +6,7 @@
     <string name="tile_screen_timeout">画面タイムアウト</string>
     <string name="tile_alarm">アラーム</string>
 
-    <string name="intro">クイック設定パネルから、普段は設定アプリを開かないと触れない項目をワンタップで操作するためのツールです。各機能の状態を下で確認し、必要なら権限を付与してください。</string>
+    <string name="intro">クイック設定のタイルとホーム画面ウィジェットの状態と設定です。権限不足のものがあれば、ここから許可してください。</string>
 
     <string name="status_available">利用可能</string>
     <string name="status_needs_permission">権限不足</string>
@@ -102,8 +102,6 @@
     <string name="btn_refresh">状態を再確認</string>
 
     <!-- タイマー -->
-    <string name="section_timer">タイマー</string>
-    <string name="timer_desc">ホーム画面のウィジェットから、決まった長さのタイマーを 1 タップで始めます。動いている間は残り時間を出し、時間が来たら完了画面で止めるか延長するかを選べます。時計アプリは使わず、このアプリ自身が鳴らします。</string>
     <string name="timer_presets_label">開始ボタンに出す長さ</string>
     <string name="timer_ring_mode_label">鳴り終わり</string>
     <string name="timer_vibrate">バイブも鳴らす</string>
@@ -124,11 +122,7 @@
     <string name="btn_allow_notifications">通知を許可</string>
     <string name="btn_allow_full_screen">全画面通知を許可</string>
     <string name="btn_allow_battery">最適化を外す</string>
-    <string name="btn_test_timer">動作確認 (10秒)</string>
     <string name="btn_add_timer_widget">タイマーウィジェットを追加</string>
-    <string name="timer_current_idle">状態: 待機中</string>
-    <string name="timer_current_running">状態: 動作中 (%1$s)</string>
-    <string name="timer_current_ringing">状態: 鳴っています</string>
     <string name="timer_widget">タイマー</string>
     <string name="timer_widget_description">決まった長さのタイマーを 1 タップで開始します。動作中は残り時間を出します。</string>
     <string name="timer_widget_remaining">残り</string>
@@ -142,17 +136,14 @@
     <string name="timer_extend_label">延長して再開</string>
     <string name="timer_stop">停止</string>
     <string name="timer_cancel">キャンセル</string>
-    <string name="timer_cancel_short">×</string>
+    <string name="timer_cancel_short">中止</string>
     <string name="channel_timer_running">タイマー (動作中)</string>
     <string name="channel_timer_ringing">タイマー (鳴動)</string>
     <string name="channel_ring_fallback">鳴動 (予備)</string>
     <string name="channel_timer_finished">タイマー (終了のお知らせ)</string>
 
     <!-- アラーム (自前) -->
-    <string name="section_own_alarm">アラーム (このアプリ)</string>
-    <string name="own_alarm_desc">時計アプリを使わずに、このアプリ自身が鳴らすアラームです。曜日の繰り返し、ラベル、スヌーズに対応し、ホーム画面のウィジェットから 1 件ずつ ON/OFF できます。鳴らす仕組みと必要な許可はタイマーと共通です。</string>
     <string name="own_alarm_count">登録: %1$d 件 (ON: %2$d 件)</string>
-    <string name="btn_open_alarm_list">アラーム一覧を開く</string>
     <string name="btn_add_alarm_widget">アラーム一覧ウィジェットを追加</string>
     <string name="alarm_list_title">アラーム</string>
     <string name="alarm_list_empty">アラームはまだありません</string>
@@ -175,8 +166,6 @@
     <string name="alarm_snoozing">スヌーズ中 (%1$s に再開)</string>
     <string name="alarm_snoozing_short">スヌーズ %1$s</string>
     <string name="alarm_saved">%1$s に鳴ります (%2$s)</string>
-    <string name="alarm_on">ON</string>
-    <string name="alarm_off">OFF</string>
     <string name="alarm_settings_title">鳴り方</string>
     <string name="alarm_snooze_label">スヌーズの長さ</string>
     <string name="alarm_settings_hint">「N分で自動スヌーズ」にすると、止めずに放っておいたときはスヌーズと同じ扱いで鳴り直します。</string>
@@ -196,5 +185,16 @@
     <string name="alarm_widget_more">他 %1$d 件 (タップで一覧)</string>
     <string name="channel_alarm_ringing">アラーム (鳴動)</string>
     <string name="channel_alarm_missed">アラーム (鳴らせなかったもの)</string>
+
+    <!-- ホーム / ツール -->
+    <string name="tools_title">ツールと設定</string>
+    <string name="tools_summary_ok">タイル / ウィジェット / 権限: すべて利用可能</string>
+    <string name="tools_summary_issues">要確認: %1$s</string>
+    <string name="tools_issue_ring">鳴動の許可</string>
+    <string name="home_perm_banner">通知・全画面通知・バッテリー最適化の許可が足りません。アラームやタイマーが鳴らないことがあります。タップして設定</string>
+    <string name="section_ring_permissions">鳴動の許可 (アラーム / タイマー)</string>
+    <string name="ring_permissions_desc">アラームとタイマーはこのアプリ自身が鳴らします。確実に鳴らすには次の 3 つが必要です。</string>
+    <string name="timer_screen_hint">ウィジェットの開始ボタンにも同じ候補が並びます。ホーム画面には先頭 4 つまでを出します。</string>
+    <string name="alarm_switch_description">アラームの ON/OFF</string>
 
 </resources>

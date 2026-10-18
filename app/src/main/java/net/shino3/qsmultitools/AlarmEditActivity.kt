@@ -45,13 +45,24 @@ class AlarmEditActivity : Activity() {
         }
 
         val days = findViewById<LinearLayout>(R.id.alarmDays)
+        days.gravity = android.view.Gravity.CENTER_HORIZONTAL
         AlarmFormat.WEEK_ORDER.forEach { day ->
             val button = ToggleButton(this).apply {
                 val text = AlarmFormat.dayShort(day)
                 textOn = text
                 textOff = text
                 isChecked = alarm?.repeatsOn(day) == true
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                // 既定の ToggleButton は下線の色しか変わらず選択が読めないので、丸い塗りつぶしにする。
+                background = getDrawable(R.drawable.bg_day_toggle)
+                setTextColor(getColorStateList(R.color.day_toggle_text))
+                minWidth = 0
+                minHeight = 0
+                val size = toPx(42f)
+                setPadding(0, 0, 0, 0)
+                layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                    val gap = toPx(3f)
+                    setMargins(gap, 0, gap, 0)
+                }
             }
             dayButtons[day] = button
             days.addView(button)
@@ -82,13 +93,18 @@ class AlarmEditActivity : Activity() {
         val mask = dayButtons.entries.fold(0) { acc, (day, button) ->
             if (button.isChecked) acc or (1 shl (day.value - 1)) else acc
         }
+        // 新規と、時刻や曜日を変えたときは ON にする。ラベルだけ直したときは ON/OFF を触らない。
+        val previous = editing
+        val timeChanged = previous == null ||
+            previous.hour != picker.hour || previous.minute != picker.minute || previous.days != mask
         val alarm = Alarm(
-            id = editing?.id ?: AlarmStore.newId(this),
+            id = previous?.id ?: AlarmStore.newId(this),
             hour = picker.hour,
             minute = picker.minute,
             days = mask,
             label = label.text.toString().trim(),
-            enabled = true,
+            enabled = if (timeChanged) true else previous.enabled,
+            snoozeUntil = if (timeChanged) 0 else previous.snoozeUntil,
         )
         AlarmScheduler.upsert(this, alarm)
         alarm.nextTrigger(System.currentTimeMillis())?.let {

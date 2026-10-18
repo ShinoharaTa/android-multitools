@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/timerScroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            style="@style/ScreenTitle"
+            android:text="@string/timer_widget" />
+
+        <LinearLayout
+            style="@style/Card"
+            android:layout_marginTop="0dp">
+
+            <include layout="@layout/view_timer_panel" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/alarm_settings_title" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/timer_presets_label" />
+
+            <LinearLayout
+                android:id="@+id/timerPresetChecks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/timer_ring_mode_label" />
+
+            <Spinner
+                android:id="@+id/spinnerRingMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp" />
+
+            <CheckBox
+                android:id="@+id/checkTimerVibrate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:text="@string/timer_vibrate" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/timer_screen_hint" />
+
+            <Button
+                android:id="@+id/btnAddTimerWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_timer_widget" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

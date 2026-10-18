@@ -40,7 +40,7 @@ abstract class BaseTileService : TileService() {
 
     /** 権限が足りないときの導線。セットアップ画面を開く。 */
     protected fun openSetup() {
-        launchAndCollapse(Intent(this, MainActivity::class.java), REQ_SETUP)
+        launchAndCollapse(Intent(this, ToolsActivity::class.java), REQ_SETUP)
     }
 
     /**

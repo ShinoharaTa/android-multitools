@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ホーム画面。やりたいこと (アラームを掛ける / タイマーを始める) に最短で届くことを優先し、
+  説明文は置かない。タイルやウィジェットの設定と権限はツール画面に寄せてある。
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/mainScroll"
     android:layout_width="match_parent"
@@ -16,425 +20,89 @@
             style="@style/ScreenTitle"
             android:text="@string/app_name" />
 
+        <!-- 許可が足りないときだけ出る注意書き。タップでツール画面へ。 -->
         <TextView
-            style="@style/Body"
-            android:text="@string/intro" />
+            android:id="@+id/homePermBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_banner_warn"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:padding="14dp"
+            android:text="@string/home_perm_banner"
+            android:textColor="@color/status_warn"
+            android:textSize="13sp"
+            android:visibility="gone" />
 
-        <!-- 1. USB デバッグ -->
-        <LinearLayout style="@style/Card">
+        <!-- アラーム -->
+        <LinearLayout
+            android:id="@+id/homeAlarmCard"
+            style="@style/HomeCard">
 
-            <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_usb_debug" />
-
-            <TextView
-                android:id="@+id/usbStatus"
-                style="@style/StatusLine" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/usb_debug_desc" />
-
-            <LinearLayout
-                android:id="@+id/usbGrantBlock"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+            <LinearLayout style="@style/HomeCardHeader">
 
                 <TextView
-                    style="@style/Body"
-                    android:text="@string/usb_debug_grant_hint" />
+                    style="@style/HomeCardTitle"
+                    android:drawableStart="@drawable/ic_tile_alarm"
+                    android:text="@string/alarm_list_title" />
 
                 <TextView
-                    android:id="@+id/usbGrantCommand"
-                    style="@style/CodeBlock" />
-
-                <Button
-                    android:id="@+id/btnCopyGrantCommand"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/btn_copy" />
+                    style="@style/HomeCardChevron" />
             </LinearLayout>
 
             <TextView
-                style="@style/Body"
-                android:paddingTop="8dp"
-                android:text="@string/usb_debug_note" />
-        </LinearLayout>
-
-        <!-- 2. 画面タイムアウト -->
-        <LinearLayout style="@style/Card">
+                android:id="@+id/homeAlarmNext"
+                style="@style/HomeCardLead" />
 
             <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_screen_timeout" />
-
-            <TextView
-                android:id="@+id/timeoutStatus"
-                style="@style/StatusLine" />
-
-            <TextView
-                android:id="@+id/timeoutCurrent"
+                android:id="@+id/homeAlarmCount"
                 style="@style/Body" />
 
-            <TextView
-                style="@style/Body"
-                android:text="@string/screen_timeout_desc" />
-
-            <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
-                android:text="@string/timeout_steps_label" />
-
-            <LinearLayout
-                android:id="@+id/timeoutSteps"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="6dp" />
-
-            <LinearLayout
-                android:id="@+id/timeoutGrantBlock"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    style="@style/Body"
-                    android:text="@string/screen_timeout_grant_hint" />
-
-                <Button
-                    android:id="@+id/btnOpenWriteSettings"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btn_open_permission" />
-
-                <TextView
-                    android:id="@+id/timeoutAdbCommand"
-                    style="@style/CodeBlock"
-                    android:layout_marginTop="10dp" />
-
-                <Button
-                    android:id="@+id/btnCopyAppOpsCommand"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/btn_copy" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- 3. アラーム -->
-        <LinearLayout style="@style/Card">
-
-            <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_alarm" />
-
-            <TextView
-                android:id="@+id/alarmStatus"
-                style="@style/StatusLine" />
-
-            <TextView
-                android:id="@+id/alarmDetail"
-                style="@style/Body" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/alarm_desc" />
-
-            <TextView
-                android:id="@+id/alarmTarget"
-                style="@style/Body" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/alarm_target_hint" />
-
             <Button
-                android:id="@+id/btnAlarmTarget"
+                android:id="@+id/btnHomeAlarmAdd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/btn_alarm_target" />
-
-            <Button
-                android:id="@+id/btnTestAlarm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_test" />
-        </LinearLayout>
-
-        <!-- アラーム (自前) -->
-        <LinearLayout style="@style/Card">
-
-            <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_own_alarm" />
-
-            <TextView
-                android:id="@+id/ownAlarmStatus"
-                style="@style/StatusLine" />
-
-            <TextView
-                android:id="@+id/ownAlarmCount"
-                style="@style/Body" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/own_alarm_desc" />
-
-            <Button
-                android:id="@+id/btnOpenAlarmList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_open_alarm_list" />
-
-            <Button
-                android:id="@+id/btnAddAlarmWidget"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_add_alarm_widget" />
+                android:text="@string/alarm_add_button" />
         </LinearLayout>
 
         <!-- タイマー -->
-        <LinearLayout style="@style/Card">
+        <LinearLayout
+            android:id="@+id/homeTimerCard"
+            style="@style/HomeCard">
 
-            <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_timer" />
-
-            <TextView
-                android:id="@+id/timerStatus"
-                style="@style/StatusLine" />
-
-            <TextView
-                android:id="@+id/timerCurrent"
-                style="@style/Body" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/timer_desc" />
-
-            <TextView
-                android:id="@+id/timerPermNotifications"
-                style="@style/Body"
-                android:paddingBottom="2dp" />
-
-            <TextView
-                android:id="@+id/timerPermFullScreen"
-                style="@style/Body"
-                android:paddingBottom="2dp" />
-
-            <TextView
-                android:id="@+id/timerPermBattery"
-                style="@style/Body" />
-
-            <LinearLayout
-                android:id="@+id/timerGrantBlock"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+            <LinearLayout style="@style/HomeCardHeader">
 
                 <TextView
-                    style="@style/Body"
-                    android:text="@string/timer_perm_hint" />
+                    style="@style/HomeCardTitle"
+                    android:drawableStart="@drawable/ic_timer"
+                    android:text="@string/timer_widget" />
 
-                <Button
-                    android:id="@+id/btnAllowNotifications"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btn_allow_notifications" />
+                <TextView
+                    style="@style/HomeCardChevron" />
+            </LinearLayout>
 
-                <Button
-                    android:id="@+id/btnAllowFullScreen"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btn_allow_full_screen" />
+            <include layout="@layout/view_timer_panel" />
+        </LinearLayout>
 
-                <Button
-                    android:id="@+id/btnAllowBattery"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/btn_allow_battery" />
+        <!-- ツールと設定 -->
+        <LinearLayout
+            android:id="@+id/homeToolsCard"
+            style="@style/HomeCard">
+
+            <LinearLayout style="@style/HomeCardHeader">
+
+                <TextView
+                    style="@style/HomeCardTitle"
+                    android:drawableStart="@drawable/ic_tools"
+                    android:text="@string/tools_title" />
+
+                <TextView
+                    style="@style/HomeCardChevron" />
             </LinearLayout>
 
             <TextView
+                android:id="@+id/homeToolsSummary"
                 style="@style/Body"
-                android:paddingBottom="2dp"
-                android:text="@string/timer_presets_label" />
-
-            <LinearLayout
-                android:id="@+id/timerPresetChecks"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="6dp" />
-
-            <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
-                android:text="@string/timer_ring_mode_label" />
-
-            <Spinner
-                android:id="@+id/spinnerRingMode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp" />
-
-            <CheckBox
-                android:id="@+id/checkTimerVibrate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
-                android:text="@string/timer_vibrate" />
-
-            <Button
-                android:id="@+id/btnAddTimerWidget"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_add_timer_widget" />
-
-            <Button
-                android:id="@+id/btnTestTimer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_test_timer" />
+                android:paddingBottom="0dp" />
         </LinearLayout>
-
-        <!-- ホーム画面ウィジェット -->
-        <LinearLayout style="@style/Card">
-
-            <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_widget" />
-
-            <TextView
-                android:id="@+id/widgetStatus"
-                style="@style/StatusLine" />
-
-            <TextView
-                android:id="@+id/widgetCurrent"
-                style="@style/Body" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/widget_desc" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/widget_hint" />
-
-            <FrameLayout
-                android:layout_width="170dp"
-                android:layout_height="76dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/bg_preview_backdrop">
-
-                <include layout="@layout/widget_next_alarm" />
-            </FrameLayout>
-
-            <TextView
-                style="@style/Body"
-                android:layout_marginTop="6dp"
-                android:gravity="center_horizontal"
-                android:text="@string/widget_preview_label" />
-
-            <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
-                android:text="@string/label_theme" />
-
-            <Spinner
-                android:id="@+id/spinnerTheme"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp" />
-
-            <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
-                android:text="@string/label_border" />
-
-            <Spinner
-                android:id="@+id/spinnerBorder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp" />
-
-            <Button
-                android:id="@+id/btnAddWidget"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_add_widget" />
-        </LinearLayout>
-
-        <!-- アプリのショートカット -->
-        <LinearLayout style="@style/Card">
-
-            <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_shortcut" />
-
-            <TextView
-                android:id="@+id/shortcutStatus"
-                style="@style/StatusLine" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/shortcut_desc" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/shortcut_hint" />
-
-            <Button
-                android:id="@+id/btnAddShortcut"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_add_shortcut" />
-        </LinearLayout>
-
-        <!-- タイル追加 -->
-        <LinearLayout style="@style/Card">
-
-            <TextView
-                style="@style/CardTitle"
-                android:text="@string/section_tiles" />
-
-            <TextView
-                style="@style/Body"
-                android:text="@string/tiles_hint" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/btnAddTileUsb"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <Button
-                    android:id="@+id/btnAddTileTimeout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <Button
-                    android:id="@+id/btnAddTileAlarm"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnRefresh"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="24dp"
-            android:text="@string/btn_refresh" />
     </LinearLayout>
 </ScrollView>

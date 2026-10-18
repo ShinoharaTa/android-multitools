@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainScroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            style="@style/ScreenTitle"
+            android:text="@string/tools_title" />
+
+        <TextView
+            style="@style/Body"
+            android:text="@string/intro" />
+
+        <!-- 鳴動の許可 (アラームとタイマー共通) -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_ring_permissions" />
+
+            <TextView
+                android:id="@+id/ringStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/ring_permissions_desc" />
+
+            <TextView
+                android:id="@+id/ringPermNotifications"
+                style="@style/Body"
+                android:paddingBottom="2dp" />
+
+            <TextView
+                android:id="@+id/ringPermFullScreen"
+                style="@style/Body"
+                android:paddingBottom="2dp" />
+
+            <TextView
+                android:id="@+id/ringPermBattery"
+                style="@style/Body" />
+
+            <LinearLayout
+                android:id="@+id/ringGrantBlock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/Body"
+                    android:text="@string/timer_perm_hint" />
+
+                <Button
+                    android:id="@+id/btnAllowNotifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_allow_notifications" />
+
+                <Button
+                    android:id="@+id/btnAllowFullScreen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_allow_full_screen" />
+
+                <Button
+                    android:id="@+id/btnAllowBattery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_allow_battery" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 1. USB デバッグ -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_usb_debug" />
+
+            <TextView
+                android:id="@+id/usbStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/usb_debug_desc" />
+
+            <LinearLayout
+                android:id="@+id/usbGrantBlock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/Body"
+                    android:text="@string/usb_debug_grant_hint" />
+
+                <TextView
+                    android:id="@+id/usbGrantCommand"
+                    style="@style/CodeBlock" />
+
+                <Button
+                    android:id="@+id/btnCopyGrantCommand"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/btn_copy" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Body"
+                android:paddingTop="8dp"
+                android:text="@string/usb_debug_note" />
+        </LinearLayout>
+
+        <!-- 2. 画面タイムアウト -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_screen_timeout" />
+
+            <TextView
+                android:id="@+id/timeoutStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                android:id="@+id/timeoutCurrent"
+                style="@style/Body" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/screen_timeout_desc" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/timeout_steps_label" />
+
+            <LinearLayout
+                android:id="@+id/timeoutSteps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="6dp" />
+
+            <LinearLayout
+                android:id="@+id/timeoutGrantBlock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/Body"
+                    android:text="@string/screen_timeout_grant_hint" />
+
+                <Button
+                    android:id="@+id/btnOpenWriteSettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_open_permission" />
+
+                <TextView
+                    android:id="@+id/timeoutAdbCommand"
+                    style="@style/CodeBlock"
+                    android:layout_marginTop="10dp" />
+
+                <Button
+                    android:id="@+id/btnCopyAppOpsCommand"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/btn_copy" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 3. アラーム -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_alarm" />
+
+            <TextView
+                android:id="@+id/alarmStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                android:id="@+id/alarmDetail"
+                style="@style/Body" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/alarm_desc" />
+
+            <TextView
+                android:id="@+id/alarmTarget"
+                style="@style/Body" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/alarm_target_hint" />
+
+            <Button
+                android:id="@+id/btnAlarmTarget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_alarm_target" />
+
+            <Button
+                android:id="@+id/btnTestAlarm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_test" />
+        </LinearLayout>
+
+        <!-- ホーム画面ウィジェット -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_widget" />
+
+            <TextView
+                android:id="@+id/widgetStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                android:id="@+id/widgetCurrent"
+                style="@style/Body" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/widget_desc" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/widget_hint" />
+
+            <FrameLayout
+                android:layout_width="170dp"
+                android:layout_height="76dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_preview_backdrop">
+
+                <include layout="@layout/widget_next_alarm" />
+            </FrameLayout>
+
+            <TextView
+                style="@style/Body"
+                android:layout_marginTop="6dp"
+                android:gravity="center_horizontal"
+                android:text="@string/widget_preview_label" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/label_theme" />
+
+            <Spinner
+                android:id="@+id/spinnerTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                style="@style/Body"
+                android:paddingBottom="2dp"
+                android:text="@string/label_border" />
+
+            <Spinner
+                android:id="@+id/spinnerBorder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/btnAddWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_widget" />
+        </LinearLayout>
+
+        <!-- アプリのショートカット -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_shortcut" />
+
+            <TextView
+                android:id="@+id/shortcutStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/shortcut_desc" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/shortcut_hint" />
+
+            <Button
+                android:id="@+id/btnAddShortcut"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_shortcut" />
+        </LinearLayout>
+
+        <!-- タイル追加 -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_tiles" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/tiles_hint" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/btnAddTileUsb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:id="@+id/btnAddTileTimeout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:id="@+id/btnAddTileAlarm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="24dp"
+            android:text="@string/btn_refresh" />
+    </LinearLayout>
+</ScrollView>

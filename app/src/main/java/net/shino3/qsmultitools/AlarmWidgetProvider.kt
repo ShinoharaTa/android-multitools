@@ -79,13 +79,16 @@ class AlarmWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.alarmWidgetAdd, activity(context, REQ_ADD, null))
 
             views.removeAllViews(R.id.alarmWidgetRows)
-            val capacity = ((size.height - PADDING_DP * 2 - HEADER_DP) / ROW_DP).toInt().coerceAtLeast(1)
-            val shown = if (alarms.size > capacity) alarms.take(capacity - 1) else alarms
+            // 全部入るならそのまま。入らなければ「他 N 件」の行 (背が低い) のぶんを引いた残りに詰める。
+            val usable = size.height - PADDING_DP * 2 - HEADER_DP
+            val capacity = (usable / ROW_DP).toInt()
+            val shown = if (alarms.size <= capacity) alarms
+            else alarms.take(((usable - MORE_DP) / ROW_DP).toInt().coerceAtLeast(1))
             views.setViewVisibility(R.id.alarmWidgetEmpty, if (alarms.isEmpty()) View.VISIBLE else View.GONE)
 
             shown.forEach { alarm ->
                 val row = RemoteViews(context.packageName, R.layout.widget_alarm_row)
-                val active = alarm.enabled || alarm.snoozeUntil > now
+                val active = alarm.isActive(now)
                 row.setTextViewText(R.id.alarmRowTime, AlarmFormat.time(context, alarm.hour, alarm.minute))
                 val sub = buildList {
                     add(
@@ -98,11 +101,12 @@ class AlarmWidgetProvider : AppWidgetProvider() {
                     if (alarm.label.isNotBlank()) add(alarm.label)
                 }.joinToString(" · ")
                 row.setTextViewText(R.id.alarmRowSub, sub)
-                row.setTextViewText(
-                    R.id.alarmRowToggle,
-                    context.getString(if (alarm.enabled) R.string.alarm_on else R.string.alarm_off),
+                // 本物のスイッチ (API 31 から RemoteViews で使える)。「ON」の文字より向きが読める。
+                row.setCompoundButtonChecked(R.id.alarmRowSwitch, active)
+                row.setOnCheckedChangeResponse(
+                    R.id.alarmRowSwitch,
+                    RemoteViews.RemoteResponse.fromPendingIntent(AlarmReceiver.toggleIntent(context, alarm.id)),
                 )
-                row.setOnClickPendingIntent(R.id.alarmRowToggle, AlarmReceiver.toggleIntent(context, alarm.id))
                 row.setOnClickPendingIntent(R.id.alarmRow, activity(context, REQ_EDIT_BASE + alarm.id, alarm.id))
 
                 val text = palette?.text ?: context.getColor(R.color.widget_text)
@@ -110,11 +114,6 @@ class AlarmWidgetProvider : AppWidgetProvider() {
                 // OFF の行は薄くする。RemoteViews では alpha を直接いじれないので、文字色で表す。
                 row.setTextColor(R.id.alarmRowTime, if (active) text else fade(text))
                 row.setTextColor(R.id.alarmRowSub, if (active) subColor else fade(subColor))
-                row.setTextColor(R.id.alarmRowToggle, if (alarm.enabled) context.getColor(R.color.widget_on_text) else subColor)
-                row.tintPill(
-                    R.id.alarmRowToggle,
-                    if (alarm.enabled) context.getColor(R.color.widget_on_bg) else (text and 0x00FFFFFF) or OFF_ALPHA,
-                )
                 views.addView(R.id.alarmWidgetRows, row)
             }
 
@@ -155,8 +154,8 @@ class AlarmWidgetProvider : AppWidgetProvider() {
 
         private const val PADDING_DP = 10f
         private const val HEADER_DP = 34f
-        private const val ROW_DP = 46f
-        private const val OFF_ALPHA = 0x1F000000
+        private const val ROW_DP = 44f
+        private const val MORE_DP = 26f
 
         /** 既定の 3x2 相当。 */
         private val DEFAULT_ALARM_LIST_SIZE = SizeF(220f, 160f)

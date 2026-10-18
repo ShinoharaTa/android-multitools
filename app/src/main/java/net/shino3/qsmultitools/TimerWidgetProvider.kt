@@ -119,13 +119,13 @@ class TimerWidgetProvider : AppWidgetProvider() {
                 views.setTextColor(R.id.timerRemaining, it.text)
             }
 
-            // ボタン以外の場所を押したときの行き先。鳴っていれば完了画面、それ以外はセットアップ画面。
+            // ボタン以外の場所を押したときの行き先。鳴っていれば完了画面、それ以外はタイマー画面。
             views.setOnClickPendingIntent(R.id.widgetRoot, openIntent(context, state.phase))
             return views
         }
 
         private fun openIntent(context: Context, phase: Timer.Phase): PendingIntent {
-            val target = if (phase == Timer.Phase.RINGING) TimerRingingActivity::class.java else MainActivity::class.java
+            val target = if (phase == Timer.Phase.RINGING) TimerRingingActivity::class.java else TimerActivity::class.java
             return PendingIntent.getActivity(
                 context,
                 REQ_WIDGET_OPEN,

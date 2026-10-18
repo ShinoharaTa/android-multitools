@@ -423,8 +423,8 @@ object TimerNotifications {
             .setShowWhen(true)
             .setUsesChronometer(true)
             .setOngoing(true)
-            // FGS の通知は状態が変わるたびに出し直すので、そのたびに鳴らないようにする。
-            .setOnlyAlertOnce(true)
+            // setOnlyAlertOnce は付けない。付けると Android 16 では初回の投稿も「鳴らさない」扱いになり、
+            // 画面オフ時に全画面インテントが発火しなかった (実機ログで SILENT フラグが付いていた)。
             .setCategory(Notification.CATEGORY_ALARM)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(fullScreen, true)
@@ -467,7 +467,7 @@ object TimerNotifications {
         PendingIntent.getActivity(
             context,
             REQ_OPEN_APP,
-            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            Intent(context, TimerActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 

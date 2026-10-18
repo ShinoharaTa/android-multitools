@@ -38,6 +38,9 @@ data class Alarm(
 ) {
     val repeating: Boolean get() = days != 0
 
+    /** 鳴る予定があるか。ON か、スヌーズ中。一覧とウィジェットのスイッチはこれを表す。 */
+    fun isActive(nowMs: Long): Boolean = enabled || snoozeUntil > nowMs
+
     fun repeatsOn(day: DayOfWeek): Boolean = days and (1 shl (day.value - 1)) != 0
 
     /** 次に鳴る時刻 (壁時計)。鳴らないなら null。 */
@@ -186,9 +189,14 @@ object AlarmScheduler {
         upsert(context, alarm.copy(enabled = enabled, snoozeUntil = 0))
     }
 
+    /**
+     * スイッチの切り替え。「鳴る予定があるか」を反転させる。
+     * スヌーズ中 (1 回きりは発火時に OFF になっている) にスイッチを切れば、スヌーズが取り消される。
+     * ON にしたのにスヌーズが消える、という事故を起こさないため。
+     */
     fun toggle(context: Context, id: Int) {
         val alarm = AlarmStore.get(context, id) ?: return
-        setEnabled(context, id, !alarm.enabled)
+        setEnabled(context, id, !alarm.isActive(System.currentTimeMillis()))
     }
 
     // ---- 鳴動 -----------------------------------------------------------
@@ -520,7 +528,7 @@ object AlarmNotifications {
             .setWhen(since)
             .setShowWhen(true)
             .setOngoing(true)
-            .setOnlyAlertOnce(true)
+            // setOnlyAlertOnce は付けない (Timer.kt の同じ箇所を参照)。
             .setCategory(Notification.CATEGORY_ALARM)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(fullScreen, true)

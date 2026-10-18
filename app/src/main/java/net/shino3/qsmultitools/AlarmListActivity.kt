@@ -72,9 +72,11 @@ class AlarmListActivity : Activity() {
             val row = inflater.inflate(R.layout.item_alarm, list, false)
             row.findViewById<TextView>(R.id.alarmTime).text = AlarmFormat.time(this, alarm.hour, alarm.minute)
             row.findViewById<TextView>(R.id.alarmSub).text = subText(alarm, now)
-            row.alpha = if (alarm.enabled || alarm.snoozeUntil > now) 1f else 0.5f
+            val active = alarm.isActive(now)
+            row.alpha = if (active) 1f else 0.5f
+            // スイッチは「鳴る予定があるか」。スヌーズ中は ON に見せ、切ればスヌーズも消える。
             row.findViewById<Switch>(R.id.alarmSwitch).apply {
-                isChecked = alarm.enabled
+                isChecked = active
                 setOnCheckedChangeListener { _, checked -> AlarmScheduler.setEnabled(this@AlarmListActivity, alarm.id, checked) }
             }
             row.setOnClickListener {

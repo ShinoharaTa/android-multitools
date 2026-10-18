@@ -14,8 +14,8 @@ android {
         // One UI 6 以降の Galaxy が対象なのでこれで足りる。
         minSdk = 34
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0"
     }
 
     buildTypes {
