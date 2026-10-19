@@ -57,7 +57,7 @@ class TimerRingingActivity : Activity() {
             extends.addView(
                 Button(this).apply {
                     text = Timer.formatExtend(ms)
-                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    layoutParams = gappedWeight()
                     setOnClickListener {
                         Timer.extend(this@TimerRingingActivity, ms)
                         finish()

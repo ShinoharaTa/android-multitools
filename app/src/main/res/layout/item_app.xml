@@ -4,8 +4,8 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="4dp"
-    android:paddingVertical="10dp">
+    android:paddingHorizontal="@dimen/space_xs"
+    android:paddingVertical="@dimen/space_m">
 
     <ImageView
         android:id="@+id/appIcon"
@@ -18,7 +18,7 @@
         android:id="@+id/appLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
+        android:layout_marginStart="@dimen/space_l"
         android:ellipsize="end"
         android:maxLines="1"
         android:textSize="15sp" />

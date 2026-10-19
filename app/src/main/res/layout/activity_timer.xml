@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/space_l">
 
         <TextView
             style="@style/ScreenTitle"
@@ -30,8 +30,7 @@
                 android:text="@string/alarm_settings_title" />
 
             <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
+                style="@style/FieldLabel"
                 android:text="@string/timer_presets_label" />
 
             <LinearLayout
@@ -39,24 +38,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingBottom="6dp" />
+                android:paddingBottom="@dimen/space_s" />
 
             <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
+                style="@style/FieldLabel"
                 android:text="@string/timer_ring_mode_label" />
 
             <Spinner
                 android:id="@+id/spinnerRingMode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp" />
+                android:layout_marginBottom="@dimen/space_s" />
 
             <CheckBox
                 android:id="@+id/checkTimerVibrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
+                android:layout_marginBottom="@dimen/space_s"
                 android:text="@string/timer_vibrate" />
 
             <TextView

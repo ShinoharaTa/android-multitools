@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="@dimen/space_l">
 
     <TextView
         style="@style/ScreenTitle"
@@ -26,7 +26,7 @@
 
     <TextView
         style="@style/CardTitle"
-        android:paddingTop="14dp"
+        android:paddingTop="@dimen/space_l"
         android:text="@string/config_pick" />
 
     <EditText
@@ -43,7 +43,7 @@
     <TextView
         android:id="@+id/alarmTargetLoading"
         style="@style/Body"
-        android:paddingTop="10dp"
+        android:paddingTop="@dimen/space_m"
         android:text="@string/config_loading" />
 
     <ListView

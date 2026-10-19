@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/space_l">
 
         <TextView
             style="@style/ScreenTitle"
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_banner_warn"
             android:foreground="?android:attr/selectableItemBackground"
-            android:padding="14dp"
+            android:padding="@dimen/space_l"
             android:text="@string/home_perm_banner"
             android:textColor="@color/status_warn"
             android:textSize="13sp"
@@ -51,13 +51,14 @@
 
             <TextView
                 android:id="@+id/homeAlarmNext"
-                style="@style/HomeCardLead" />
+                style="@style/Lead" />
 
             <TextView
                 android:id="@+id/homeAlarmCount"
                 style="@style/Body" />
 
             <Button
+        style="@style/Button.Filled"
                 android:id="@+id/btnHomeAlarmAdd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

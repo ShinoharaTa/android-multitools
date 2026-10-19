@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  デザインの寸法はすべてここに置く。レイアウトに dp を直接書かない (docs/DESIGN.md の 11 章)。
+  余白は 4dp 刻みの 6 段階だけを使う。
+-->
+<resources>
+    <!-- 余白 -->
+    <dimen name="space_xs">4dp</dimen>   <!-- ラベルと入力欄、隣り合うボタンの間 -->
+    <dimen name="space_s">8dp</dimen>    <!-- 同じまとまりの中の行と行 -->
+    <dimen name="space_m">12dp</dimen>   <!-- カードとカードの間 -->
+    <dimen name="space_l">16dp</dimen>   <!-- 画面の端、カードの内側 -->
+    <dimen name="space_xl">24dp</dimen>  <!-- 見出しと本文のまとまりの区切り -->
+    <dimen name="space_xxl">48dp</dimen> <!-- 鳴動画面のような、大きく離したい区切り -->
+
+    <!-- 角丸 -->
+    <dimen name="radius_card">20dp</dimen>
+    <dimen name="radius_inner">12dp</dimen> <!-- カードの中に置くもの (コード欄など) -->
+
+    <!-- 触れるものの大きさ -->
+    <dimen name="touch_min">48dp</dimen>
+    <dimen name="button_large">64dp</dimen> <!-- 鳴動画面とタイマーの開始ボタン -->
+    <dimen name="day_toggle">40dp</dimen>   <!-- 曜日ボタンの丸。7 つ並べて 360dp 幅の端末に収まる大きさ -->
+</resources>

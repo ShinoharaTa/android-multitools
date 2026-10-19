@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/space_l">
 
         <TextView
             style="@style/ScreenTitle"
@@ -38,12 +38,12 @@
             <TextView
                 android:id="@+id/ringPermNotifications"
                 style="@style/Body"
-                android:paddingBottom="2dp" />
+                android:paddingBottom="@dimen/space_xs" />
 
             <TextView
                 android:id="@+id/ringPermFullScreen"
                 style="@style/Body"
-                android:paddingBottom="2dp" />
+                android:paddingBottom="@dimen/space_xs" />
 
             <TextView
                 android:id="@+id/ringPermBattery"
@@ -112,13 +112,13 @@
                     android:id="@+id/btnCopyGrantCommand"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/space_s"
                     android:text="@string/btn_copy" />
             </LinearLayout>
 
             <TextView
                 style="@style/Body"
-                android:paddingTop="8dp"
+                android:paddingTop="@dimen/space_s"
                 android:text="@string/usb_debug_note" />
         </LinearLayout>
 
@@ -142,8 +142,7 @@
                 android:text="@string/screen_timeout_desc" />
 
             <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
+                style="@style/FieldLabel"
                 android:text="@string/timeout_steps_label" />
 
             <LinearLayout
@@ -151,7 +150,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingBottom="6dp" />
+                android:paddingBottom="@dimen/space_s" />
 
             <LinearLayout
                 android:id="@+id/timeoutGrantBlock"
@@ -172,13 +171,13 @@
                 <TextView
                     android:id="@+id/timeoutAdbCommand"
                     style="@style/CodeBlock"
-                    android:layout_marginTop="10dp" />
+                    android:layout_marginTop="@dimen/space_m" />
 
                 <Button
                     android:id="@+id/btnCopyAppOpsCommand"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/space_s"
                     android:text="@string/btn_copy" />
             </LinearLayout>
         </LinearLayout>
@@ -250,7 +249,7 @@
                 android:layout_width="170dp"
                 android:layout_height="76dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/space_xs"
                 android:background="@drawable/bg_preview_backdrop">
 
                 <include layout="@layout/widget_next_alarm" />
@@ -258,31 +257,29 @@
 
             <TextView
                 style="@style/Body"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="@dimen/space_s"
                 android:gravity="center_horizontal"
                 android:text="@string/widget_preview_label" />
 
             <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
+                style="@style/FieldLabel"
                 android:text="@string/label_theme" />
 
             <Spinner
                 android:id="@+id/spinnerTheme"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp" />
+                android:layout_marginBottom="@dimen/space_m" />
 
             <TextView
-                style="@style/Body"
-                android:paddingBottom="2dp"
+                style="@style/FieldLabel"
                 android:text="@string/label_border" />
 
             <Spinner
                 android:id="@+id/spinnerBorder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp" />
+                android:layout_marginBottom="@dimen/space_m" />
 
             <Button
                 android:id="@+id/btnAddWidget"
@@ -354,8 +351,8 @@
             android:id="@+id/btnRefresh"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="@dimen/space_m"
+            android:layout_marginBottom="@dimen/space_xl"
             android:text="@string/btn_refresh" />
     </LinearLayout>
 </ScrollView>

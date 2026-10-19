@@ -4,9 +4,26 @@
       アクションバーは使わない。targetSdk 35 以降の edge-to-edge では
       DeviceDefault のアクションバーが本文に重なってしまうため、
       見出しは画面の中に自前で置き、inset は padForSystemBars() で処理する。
+
+      色は colors.xml のシステム動的カラーから取る。チェックボックスやスイッチ、スピナーの
+      選択色は colorAccent / colorControlActivated で primary に揃う。
+      ボタンは既定を Button.Tonal にし、主ボタンだけ Button.Filled を明示する。
     -->
     <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.DayNight">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:colorPrimary">@color/primary</item>
+        <item name="android:colorControlActivated">@color/primary</item>
+        <item name="android:textColorPrimary">@color/on_surface</item>
+        <item name="android:textColorSecondary">@color/on_surface_variant</item>
+        <item name="android:textColorHint">@color/on_surface_variant</item>
+        <item name="android:buttonStyle">@style/Button.Tonal</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 </resources>

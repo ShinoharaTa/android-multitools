@@ -1,16 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  アプリ画面の色。壁紙から作られるシステムの動的カラー (Material You, API 34+) をそのまま使う。
+  自分で配色を決めないので、端末の見た目に馴染み、ダークモードにも追従する。
+  ウィジェットの色 (widget_*) は WidgetStyle の背景テーマで切り替えるので、ここでは固定値のまま。
+-->
 <resources>
     <color name="ic_launcher_background">#FF1B2430</color>
-    <color name="card_bg">#FFF3F4F6</color>
-    <color name="code_bg">#FFE4E7EB</color>
+
+    <color name="bg">@android:color/system_background_light</color>
+    <color name="surface">@android:color/system_surface_container_light</color>
+    <color name="surface_high">@android:color/system_surface_container_highest_light</color>
+    <color name="on_surface">@android:color/system_on_surface_light</color>
+    <color name="on_surface_variant">@android:color/system_on_surface_variant_light</color>
+    <color name="outline">@android:color/system_outline_variant_light</color>
+    <color name="primary">@android:color/system_primary_light</color>
+    <color name="on_primary">@android:color/system_on_primary_light</color>
+    <color name="secondary_container">@android:color/system_secondary_container_light</color>
+    <color name="on_secondary_container">@android:color/system_on_secondary_container_light</color>
+
+    <!-- 状態の色だけは意味が決まっているので固定。 -->
     <color name="status_ok">#FF1B7F3B</color>
     <color name="status_warn">#FFB26A00</color>
     <color name="status_ng">#FFB3261E</color>
-    <color name="text_secondary">#FF5F6368</color>
+    <color name="banner_warn_bg">#1AB26A00</color>
+
     <color name="widget_bg">#FFFDFDFD</color>
     <color name="widget_text">#FF1B1D21</color>
     <color name="widget_text_sub">#FF5F6368</color>
     <color name="widget_border">#33000000</color>
     <color name="widget_button_bg">#14000000</color>
-    <color name="banner_warn_bg">#1AB26A00</color>
 </resources>

@@ -57,11 +57,11 @@ class AlarmEditActivity : Activity() {
                 setTextColor(getColorStateList(R.color.day_toggle_text))
                 minWidth = 0
                 minHeight = 0
-                val size = toPx(42f)
+                val size = resources.getDimensionPixelSize(R.dimen.day_toggle)
                 setPadding(0, 0, 0, 0)
                 layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                    val gap = toPx(3f)
-                    setMargins(gap, 0, gap, 0)
+                    val half = resources.getDimensionPixelSize(R.dimen.space_xs) / 2
+                    setMargins(half, 0, half, 0)
                 }
             }
             dayButtons[day] = button

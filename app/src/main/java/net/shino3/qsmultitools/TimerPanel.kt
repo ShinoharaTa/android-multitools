@@ -86,8 +86,9 @@ class TimerPanel(private val activity: Activity, root: View, private val compact
     private fun renderPresets() {
         idle.removeAllViews()
         val presets = TimerSettings.presets(activity)
-        val columns = if (compact) COMPACT_COLUMNS else FULL_COLUMNS
-        val shown = if (compact) presets.take(columns) else presets
+        // ホームでは 1 行に収まるぶんだけ出し、その行を等分して埋める。
+        val shown = if (compact) presets.take(COMPACT_COLUMNS) else presets
+        val columns = if (compact) shown.size.coerceAtLeast(1) else FULL_COLUMNS
         shown.chunked(columns).forEach { chunk ->
             val row = LinearLayout(activity).apply { orientation = LinearLayout.HORIZONTAL }
             chunk.forEach { ms ->
@@ -96,9 +97,9 @@ class TimerPanel(private val activity: Activity, root: View, private val compact
                         text = Timer.formatDuration(ms)
                         if (!compact) {
                             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-                            minimumHeight = activity.toPx(64f)
+                            minimumHeight = activity.resources.getDimensionPixelSize(R.dimen.button_large)
                         }
-                        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                        layoutParams = activity.gappedWeight()
                         setOnClickListener { Timer.start(activity, ms) }
                     },
                 )
@@ -106,7 +107,7 @@ class TimerPanel(private val activity: Activity, root: View, private val compact
             // 最後の行が埋まらないときは、同じ幅の空きを足して揃える。
             repeat(columns - chunk.size) {
                 row.addView(View(activity).apply {
-                    layoutParams = LinearLayout.LayoutParams(0, 1, 1f)
+                    layoutParams = activity.gappedWeight().apply { height = 1 }
                 })
             }
             idle.addView(row)
@@ -117,7 +118,7 @@ class TimerPanel(private val activity: Activity, root: View, private val compact
         actions.addView(
             Button(activity).apply {
                 text = label
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = activity.gappedWeight()
                 setOnClickListener { onClick() }
             },
         )

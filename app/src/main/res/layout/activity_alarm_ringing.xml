@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="@dimen/space_xl">
 
     <TextView
         android:id="@+id/alarmRingingTime"
@@ -20,22 +20,22 @@
         android:id="@+id/alarmRingingLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/space_s"
         android:gravity="center"
         android:textSize="22sp" />
 
     <Button
+        style="@style/Button.Tonal.Large"
         android:id="@+id/btnAlarmSnooze"
         android:layout_width="match_parent"
-        android:layout_height="96dp"
-        android:layout_marginTop="56dp"
-        android:textSize="22sp" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xxl" />
 
     <Button
+        style="@style/Button.Filled.Large"
         android:id="@+id/btnAlarmDismiss"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/timer_stop"
-        android:textSize="20sp" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l"
+        android:text="@string/timer_stop" />
 </LinearLayout>

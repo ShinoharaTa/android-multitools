@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="@dimen/space_l">
 
     <TextView
         style="@style/ScreenTitle"
@@ -15,8 +15,7 @@
         android:text="@string/config_desc" />
 
     <TextView
-        style="@style/Body"
-        android:paddingBottom="2dp"
+        style="@style/FieldLabel"
         android:text="@string/label_icon_size" />
 
     <Spinner
@@ -26,45 +25,42 @@
 
     <TextView
         style="@style/Body"
-        android:paddingTop="4dp"
+        android:paddingTop="@dimen/space_xs"
         android:text="@string/icon_size_note" />
 
     <TextView
-        style="@style/Body"
-        android:paddingBottom="2dp"
+        style="@style/FieldLabel"
         android:text="@string/label_label_mode" />
 
     <Spinner
         android:id="@+id/shortcutLabelMode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="@dimen/space_s" />
 
     <TextView
-        style="@style/Body"
-        android:paddingBottom="2dp"
+        style="@style/FieldLabel"
         android:text="@string/label_theme" />
 
     <Spinner
         android:id="@+id/shortcutTheme"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="@dimen/space_s" />
 
     <TextView
-        style="@style/Body"
-        android:paddingBottom="2dp"
+        style="@style/FieldLabel"
         android:text="@string/label_border" />
 
     <Spinner
         android:id="@+id/shortcutBorder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="@dimen/space_s" />
 
     <TextView
         style="@style/CardTitle"
-        android:paddingTop="14dp"
+        android:paddingTop="@dimen/space_l"
         android:text="@string/config_pick" />
 
     <EditText
@@ -81,7 +77,7 @@
     <TextView
         android:id="@+id/shortcutLoading"
         style="@style/Body"
-        android:paddingTop="10dp"
+        android:paddingTop="@dimen/space_m"
         android:text="@string/config_loading" />
 
     <ListView

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/space_l">
 
         <TextView
             android:id="@+id/alarmEditTitle"
@@ -24,9 +24,7 @@
             android:timePickerMode="spinner" />
 
         <TextView
-            style="@style/Body"
-            android:paddingTop="8dp"
-            android:paddingBottom="2dp"
+            style="@style/FieldLabel"
             android:text="@string/alarm_repeat_label" />
 
         <LinearLayout
@@ -42,7 +40,7 @@
 
             <Button
                 android:id="@+id/btnDaysWeekdays"
-                style="?android:attr/borderlessButtonStyle"
+                style="@style/Button.Text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -50,7 +48,7 @@
 
             <Button
                 android:id="@+id/btnDaysEveryDay"
-                style="?android:attr/borderlessButtonStyle"
+                style="@style/Button.Text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -58,7 +56,7 @@
 
             <Button
                 android:id="@+id/btnDaysOnce"
-                style="?android:attr/borderlessButtonStyle"
+                style="@style/Button.Text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -66,9 +64,7 @@
         </LinearLayout>
 
         <TextView
-            style="@style/Body"
-            android:paddingTop="8dp"
-            android:paddingBottom="2dp"
+            style="@style/FieldLabel"
             android:text="@string/alarm_label_label" />
 
         <EditText
@@ -81,24 +77,26 @@
             android:maxLines="1" />
 
         <Button
+        style="@style/Button.Filled"
             android:id="@+id/btnAlarmSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/space_l"
             android:text="@string/alarm_save" />
 
         <Button
+        style="@style/Button.Text"
             android:id="@+id/btnAlarmCancel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@android:string/cancel" />
+            android:text="@string/timer_cancel" />
 
         <Button
             android:id="@+id/btnAlarmDelete"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Button.Text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/space_s"
             android:text="@string/alarm_delete"
             android:textColor="@color/status_ng" />
     </LinearLayout>
