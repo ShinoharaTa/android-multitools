@@ -131,6 +131,22 @@
         <item name="android:textIsSelectable">true</item>
     </style>
 
+    <!-- 検索欄。塗りつぶしのピル型で、左に検索アイコン。 -->
+    <style name="SearchField">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/touch_min</item>
+        <item name="android:background">@drawable/bg_search</item>
+        <item name="android:drawableStart">@drawable/ic_search</item>
+        <item name="android:drawablePadding">@dimen/space_m</item>
+        <item name="android:paddingStart">@dimen/space_l</item>
+        <item name="android:paddingEnd">@dimen/space_l</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/on_surface</item>
+        <item name="android:inputType">text</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:importantForAutofill">no</item>
+    </style>
+
     <!-- ===== ボタン =====
       Filled: 1 画面に 1 つ、いちばんやりたい操作 (保存、追加、停止)
       Tonal : 既定。それ以外のふつうの操作

@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- アプリ一覧の 1 行。名前の下に注記 (「アラーム一覧に対応」など) を出す。押すと行全体が光る。 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/ripple_row"
     android:gravity="center_vertical"
+    android:minHeight="64dp"
     android:orientation="horizontal"
-    android:paddingHorizontal="@dimen/space_xs"
-    android:paddingVertical="@dimen/space_m">
+    android:paddingHorizontal="@dimen/space_s"
+    android:paddingVertical="@dimen/space_s">
 
     <ImageView
         android:id="@+id/appIcon"
@@ -14,12 +17,25 @@
         android:contentDescription="@string/shortcut_icon_description"
         android:scaleType="fitCenter" />
 
-    <TextView
-        android:id="@+id/appLabel"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/space_l"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textSize="15sp" />
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/appLabel"
+            style="@style/Lead"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingBottom="0dp" />
+
+        <TextView
+            android:id="@+id/appBadge"
+            style="@style/Caption"
+            android:paddingBottom="0dp"
+            android:textColor="@color/primary"
+            android:visibility="gone" />
+    </LinearLayout>
 </LinearLayout>

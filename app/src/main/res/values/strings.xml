@@ -37,7 +37,7 @@
     <string name="alarm_target_current">開き先: %1$s</string>
     <string name="alarm_target_auto">自動 (標準の方法に任せる)</string>
     <string name="alarm_target_use_auto">自動に戻す</string>
-    <string name="alarm_target_badge">・アラーム一覧に対応</string>
+    <string name="alarm_target_badge">アラーム一覧に対応</string>
     <string name="alarm_target_hint">タップしても時計アプリが開かない場合は、開き先を直接指定してください。指定はタイルとウィジェットの両方に効きます。</string>
     <string name="btn_alarm_target">開き先を選ぶ</string>
     <string name="alarm_desc">タイルをタップすると、標準の時計アプリのアラーム一覧を開きます。まず Android 標準の SHOW_ALARMS Intent を使い、解決できない場合のみ Galaxy 標準時計アプリへフォールバックします。</string>
@@ -64,6 +64,7 @@
     <string name="shortcut_icon_description">アプリのアイコン</string>
     <string name="config_desc">タップしたときに開くアプリを選びます。アイコンとラベルはそのアプリのものを使います。</string>
     <string name="config_pick">アプリを選ぶ</string>
+    <string name="shortcut_look_title">見た目</string>
     <string name="config_loading">アプリを読み込んでいます…</string>
     <string name="hint_search">アプリ名で絞り込み</string>
     <string name="label_icon_size">アイコンの大きさ</string>
