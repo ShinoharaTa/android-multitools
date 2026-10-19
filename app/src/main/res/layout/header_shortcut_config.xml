@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ショートカットの設定: リストのヘッダー。見た目の設定をカードにまとめ、その下でアプリを選ぶ。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/space_s">
+
+    <TextView
+        style="@style/ScreenTitle"
+        android:text="@string/shortcut_widget" />
+
+    <TextView
+        style="@style/Body"
+        android:text="@string/config_desc" />
+
+    <LinearLayout style="@style/Card">
+
+        <TextView
+            style="@style/CardTitle"
+            android:text="@string/shortcut_look_title" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:paddingTop="0dp"
+            android:text="@string/label_icon_size" />
+
+        <Spinner
+            android:id="@+id/shortcutIconSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/Caption"
+            android:paddingTop="@dimen/space_xs"
+            android:text="@string/icon_size_note" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="@string/label_label_mode" />
+
+        <Spinner
+            android:id="@+id/shortcutLabelMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="@string/label_theme" />
+
+        <Spinner
+            android:id="@+id/shortcutTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="@string/label_border" />
+
+        <Spinner
+            android:id="@+id/shortcutBorder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/CardTitle"
+        android:paddingTop="@dimen/space_xl"
+        android:text="@string/config_pick" />
+
+    <EditText
+        android:id="@+id/shortcutSearch"
+        style="@style/SearchField"
+        android:hint="@string/hint_search" />
+
+    <TextView
+        android:id="@+id/shortcutLoading"
+        style="@style/Body"
+        android:paddingTop="@dimen/space_m"
+        android:text="@string/config_loading" />
+</LinearLayout>

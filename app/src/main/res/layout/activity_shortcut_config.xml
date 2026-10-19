@@ -1,90 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/configRoot"
+<!--
+  画面全体を 1 本のリストにする。見出し・設定・検索欄はリストのヘッダー (header_*.xml) に置き、
+  アプリ一覧と一緒にスクロールさせる。上に設定を固定すると、一覧が画面の下に押し込まれるため。
+-->
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/shortcutAppList"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/space_l">
-
-    <TextView
-        style="@style/ScreenTitle"
-        android:text="@string/shortcut_widget" />
-
-    <TextView
-        style="@style/Body"
-        android:text="@string/config_desc" />
-
-    <TextView
-        style="@style/FieldLabel"
-        android:text="@string/label_icon_size" />
-
-    <Spinner
-        android:id="@+id/shortcutIconSize"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        style="@style/Body"
-        android:paddingTop="@dimen/space_xs"
-        android:text="@string/icon_size_note" />
-
-    <TextView
-        style="@style/FieldLabel"
-        android:text="@string/label_label_mode" />
-
-    <Spinner
-        android:id="@+id/shortcutLabelMode"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/space_s" />
-
-    <TextView
-        style="@style/FieldLabel"
-        android:text="@string/label_theme" />
-
-    <Spinner
-        android:id="@+id/shortcutTheme"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/space_s" />
-
-    <TextView
-        style="@style/FieldLabel"
-        android:text="@string/label_border" />
-
-    <Spinner
-        android:id="@+id/shortcutBorder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/space_s" />
-
-    <TextView
-        style="@style/CardTitle"
-        android:paddingTop="@dimen/space_l"
-        android:text="@string/config_pick" />
-
-    <EditText
-        android:id="@+id/shortcutSearch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/hint_search"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:maxLines="1"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/shortcutLoading"
-        style="@style/Body"
-        android:paddingTop="@dimen/space_m"
-        android:text="@string/config_loading" />
-
-    <ListView
-        android:id="@+id/shortcutAppList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:divider="@null"
-        android:dividerHeight="0dp" />
-</LinearLayout>
+    android:clipToPadding="false"
+    android:divider="@null"
+    android:dividerHeight="0dp"
+    android:listSelector="@android:color/transparent"
+    android:paddingHorizontal="@dimen/space_l"
+    android:paddingTop="@dimen/space_l"
+    android:paddingBottom="@dimen/space_l"
+    android:scrollbarStyle="outsideOverlay" />

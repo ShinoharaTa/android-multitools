@@ -2,6 +2,7 @@ package net.shino3.qsmultitools
 
 import android.app.Activity
 import android.content.ComponentName
+import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,29 +26,33 @@ class AlarmTargetActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_alarm_target)
-        findViewById<View>(R.id.alarmTargetRoot).padForSystemBars()
+        val list = findViewById<ListView>(R.id.alarmTargetList)
+        list.padForSystemBars()
+        // 見出しと設定はリストのヘッダー。一覧と一緒にスクロールする。
+        val header = layoutInflater.inflate(R.layout.header_alarm_target, list, false)
+        list.addHeaderView(header, null, false)
 
         val current = Alarms.configured(this)
-        findViewById<TextView>(R.id.alarmTargetCurrent).text = getString(
+        header.findViewById<TextView>(R.id.alarmTargetCurrent).text = getString(
             R.string.alarm_target_current,
             current?.let { InstalledApps.label(this, it) ?: it.packageName }
                 ?: getString(R.string.alarm_target_auto),
         )
 
-        findViewById<Button>(R.id.btnAlarmTargetAuto).setOnClickListener { commit(null) }
+        header.findViewById<Button>(R.id.btnAlarmTargetAuto).setOnClickListener { commit(null) }
 
         val handlers = Alarms.handlerPackages(this)
         adapter = AppListAdapter(this) { info ->
             if (info.activityInfo.packageName in handlers) getString(R.string.alarm_target_badge) else null
         }
-        val list = findViewById<ListView>(R.id.alarmTargetList)
         list.adapter = adapter
-        list.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            val info = adapter.getItem(position)
+        // ヘッダーがあるので position はヘッダーぶんずれる。リスト側に項目を引かせる。
+        list.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
+            val info = parent.getItemAtPosition(position) as? ResolveInfo ?: return@OnItemClickListener
             commit(ComponentName(info.activityInfo.packageName, info.activityInfo.name))
         }
 
-        findViewById<EditText>(R.id.alarmTargetSearch).addTextChangedListener(
+        header.findViewById<EditText>(R.id.alarmTargetSearch).addTextChangedListener(
             object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) = adapter.filter(s?.toString().orEmpty())
                 override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) = Unit
@@ -62,7 +67,7 @@ class AlarmTargetActivity : Activity() {
             runOnUiThread {
                 if (!isFinishing) {
                     adapter.replaceAll(sorted)
-                    findViewById<View>(R.id.alarmTargetLoading).visibility = View.GONE
+                    header.findViewById<View>(R.id.alarmTargetLoading).visibility = View.GONE
                 }
             }
         }.start()
