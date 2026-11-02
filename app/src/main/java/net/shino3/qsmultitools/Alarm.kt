@@ -26,6 +26,10 @@ import java.util.Calendar
  *
  * [snoozeUntil] はスヌーズ中の再鳴動時刻 (壁時計)。過ぎていれば無視する。
  * スヌーズ中は ON/OFF に関係なく鳴る。1 回きりのアラームは鳴った時点で OFF にするため。
+ *
+ * [onceAt] は 1 回きりのアラームが鳴る日時 (壁時計)。「時・分」だけだと、予定の日に鳴らせなかった
+ * (電源が切れていた等) ときに後日の同じ時刻へ持ち越されてしまうので、ON にした時点で日付まで決めて固定する。
+ * 過ぎていたら鳴らさずに OFF にする ([AlarmScheduler.reschedule])。繰り返しのアラームでは使わない。
  */
 data class Alarm(
     val id: Int,
@@ -35,6 +39,7 @@ data class Alarm(
     val label: String,
     val enabled: Boolean,
     val snoozeUntil: Long = 0,
+    val onceAt: Long = 0,
 ) {
     val repeating: Boolean get() = days != 0
 
@@ -47,6 +52,21 @@ data class Alarm(
     fun nextTrigger(nowMs: Long, zone: ZoneId = ZoneId.systemDefault()): Long? {
         if (snoozeUntil > nowMs) return snoozeUntil
         if (!enabled) return null
+        // 1 回きりは決めておいた日時だけ。発火の処理が少し遅れても鳴らせるよう、過ぎてから少しは待つ。
+        if (!repeating && onceAt > 0) return onceAt.takeIf { it > nowMs - LATE_GRACE_MS }
+        return nextOccurrence(nowMs, zone)
+    }
+
+    /** 1 回きりで、決めておいた日時を過ぎてしまったもの。鳴らさずに OFF にする。 */
+    fun expired(nowMs: Long): Boolean =
+        enabled && !repeating && onceAt > 0 && onceAt <= nowMs - LATE_GRACE_MS
+
+    /** ON の 1 回きりで日時がまだ決まっていなければ、「今より後の次のその時刻」で決める。 */
+    fun armed(nowMs: Long): Alarm =
+        if (enabled && !repeating && onceAt == 0L) copy(onceAt = nextOccurrence(nowMs) ?: 0) else this
+
+    /** ON/OFF やスヌーズを見ずに、時・分・曜日だけから出した「今より後の次の時刻」。 */
+    fun nextOccurrence(nowMs: Long, zone: ZoneId = ZoneId.systemDefault()): Long? {
         val now = Instant.ofEpochMilli(nowMs).atZone(zone)
         // 今日から 7 日後まで見れば、どの曜日指定でも必ず 1 回は当たる。
         for (offset in 0..7L) {
@@ -67,11 +87,15 @@ data class Alarm(
         .put("label", label)
         .put("enabled", enabled)
         .put("snoozeUntil", snoozeUntil)
+        .put("onceAt", onceAt)
 
     companion object {
         const val EVERY_DAY = 0b1111111
         const val WEEKDAYS = 0b0011111
         const val WEEKEND = 0b1100000
+
+        /** 1 回きりのアラームが予定より遅れて処理されても鳴らす幅。これより前に過ぎたものは OFF にする。 */
+        const val LATE_GRACE_MS = 10 * 60 * 1000L
 
         fun fromJson(json: JSONObject) = Alarm(
             id = json.getInt("id"),
@@ -81,6 +105,7 @@ data class Alarm(
             label = json.optString("label", ""),
             enabled = json.optBoolean("enabled", true),
             snoozeUntil = json.optLong("snoozeUntil", 0),
+            onceAt = json.optLong("onceAt", 0),
         )
     }
 }
@@ -171,7 +196,7 @@ object AlarmScheduler {
 
     fun upsert(context: Context, alarm: Alarm) {
         val others = AlarmStore.all(context).filter { it.id != alarm.id }
-        AlarmStore.saveAll(context, others + alarm)
+        AlarmStore.saveAll(context, others + alarm.armed(System.currentTimeMillis()))
         changed(context)
     }
 
@@ -183,10 +208,13 @@ object AlarmScheduler {
         RingService.update(context)
     }
 
-    /** ON/OFF を切り替える。OFF にしたときはスヌーズも取り消す。 */
+    /**
+     * ON/OFF を切り替える。OFF にしたときはスヌーズも取り消す。
+     * 1 回きりの日時はいったん捨て、ON にしたときに「今より後の次のその時刻」で決め直す。
+     */
     fun setEnabled(context: Context, id: Int, enabled: Boolean) {
         val alarm = AlarmStore.get(context, id) ?: return
-        upsert(context, alarm.copy(enabled = enabled, snoozeUntil = 0))
+        upsert(context, alarm.copy(enabled = enabled, snoozeUntil = 0, onceAt = 0))
     }
 
     /**
@@ -218,7 +246,7 @@ object AlarmScheduler {
         }
         val fired = AlarmStore.all(context).map { alarm ->
             if (alarm.id !in ids) alarm
-            else alarm.copy(enabled = alarm.enabled && alarm.repeating, snoozeUntil = 0)
+            else alarm.copy(enabled = alarm.enabled && alarm.repeating, snoozeUntil = 0, onceAt = 0)
         }
         AlarmStore.saveAll(context, fired)
 
@@ -271,7 +299,7 @@ object AlarmScheduler {
             AlarmStore.saveAll(
                 context,
                 all.map {
-                    if (it.id in ids) it.copy(enabled = it.enabled && it.repeating, snoozeUntil = 0) else it
+                    if (it.id in ids) it.copy(enabled = it.enabled && it.repeating, snoozeUntil = 0, onceAt = 0) else it
                 },
             )
             if (missed.isNotEmpty()) AlarmNotifications.postMissed(context, at, missed)
@@ -281,10 +309,32 @@ object AlarmScheduler {
         changed(context)
     }
 
-    /** 全アラームから次の 1 回を探して張り直す。無ければ取り消す。 */
+    /**
+     * 全アラームから次の 1 回を探して張り直す。無ければ取り消す。
+     *
+     * その前に 1 回きりのアラームを整える。日時が決まっていないもの (この仕組みより前に保存されたもの) は、
+     * 前回張った時刻があればそこから、無ければ今から数えた「次のその時刻」で決める。
+     * 決めておいた日時を過ぎてしまったものは鳴らさずに OFF にする。
+     * 「鳴らせなかった」通知は [onBoot] が直近のぶんだけ出す。
+     */
     fun reschedule(context: Context) {
         val now = System.currentTimeMillis()
-        val next = AlarmStore.all(context)
+        val stored = AlarmStore.all(context)
+        // 日時を持たない古いデータは、前回張った時刻 (scheduled_at) から鳴るはずだった日時が分かる。
+        // 張ったときは全アラームの中で最も早い時刻を選んでいるので、どの ON の 1 回きりも
+        // 「scheduled_at 以降で最初のその時刻」に鳴るはずだった。今から数えた次の時刻で決めると、
+        // 電源が切れている間に過ぎたものが後日鳴ってしまう (Issue #13)。
+        val lastAt = AlarmStore.scheduled(context).first
+        val tidied = stored.map { original ->
+            val alarm = if (original.enabled && !original.repeating && original.onceAt == 0L && lastAt > 0) {
+                original.copy(onceAt = original.nextOccurrence(lastAt - 1) ?: 0)
+            } else {
+                original
+            }
+            if (alarm.expired(now)) alarm.copy(enabled = false, onceAt = 0) else alarm.armed(now)
+        }
+        if (tidied != stored) AlarmStore.saveAll(context, tidied)
+        val next = tidied
             .mapNotNull { alarm -> alarm.nextTrigger(now)?.let { alarm.id to it } }
         val manager = context.getSystemService(AlarmManager::class.java) ?: return
         val earliest = next.minOfOrNull { it.second }
@@ -447,11 +497,10 @@ object AlarmFormat {
             Alarm.EVERY_DAY -> context.getString(R.string.alarm_every_day)
             Alarm.WEEKDAYS -> context.getString(R.string.alarm_weekdays)
             Alarm.WEEKEND -> context.getString(R.string.alarm_weekend)
+            // 1 回きりは決めてある日時の日付 (今日 / 明日 / 曜日つきの日付)。OFF なら次にその時刻が来る日。
             0 -> {
-                val next = alarm.copy(enabled = true, snoozeUntil = 0).nextTrigger(nowMs)
-                val date = next?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
-                if (date == LocalDate.now()) context.getString(R.string.day_today)
-                else context.getString(R.string.day_tomorrow)
+                val at = alarm.onceAt.takeIf { it > 0 } ?: alarm.nextOccurrence(nowMs)
+                at?.let { NextAlarm.formatDay(context, it) } ?: context.getString(R.string.day_tomorrow)
             }
             else -> WEEK_ORDER.filter { alarm.repeatsOn(it) }.joinToString(" ") { dayShort(it) }
         }

@@ -105,6 +105,8 @@ class AlarmEditActivity : Activity() {
             label = label.text.toString().trim(),
             enabled = if (timeChanged) true else previous.enabled,
             snoozeUntil = if (timeChanged) 0 else previous.snoozeUntil,
+            // 時刻や曜日を変えたら 1 回きりの日時も決め直す (保存時に AlarmScheduler.upsert が決める)。
+            onceAt = if (timeChanged) 0 else previous.onceAt,
         )
         AlarmScheduler.upsert(this, alarm)
         alarm.nextTrigger(System.currentTimeMillis())?.let {
