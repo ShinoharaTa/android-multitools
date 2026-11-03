@@ -14,13 +14,17 @@ android {
         // One UI 6 以降の Galaxy が対象なのでこれで足りる。
         minSdk = 34
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.5.0"
+        versionCode = 6
+        versionName = "0.6.0"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            // 個人用でストア公開しないので、リリース版もデバッグ用の鍵で署名する。
+            // テスト版 (debug) と同じ鍵なので、入っているものに上書きでき、adb で付けた権限も残る。
+            // この Mac の ~/.android/debug.keystore に依存する点に注意 (別の環境でビルドすると鍵が変わる)。
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

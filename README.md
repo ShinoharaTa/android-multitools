@@ -180,6 +180,10 @@ X アプリを直接指定した共有 (共有メニューで X を選ぶ等) �
    ./gradlew :app:assembleDebug
    ```
 
+   リリース版は `./gradlew :app:assembleRelease` (`app/build/outputs/apk/release/app-release.apk`)。
+   個人用なのでリリース版もデバッグ用の鍵で署名していて、テスト版に上書きでき、adb で付けた権限も残る。
+   鍵はこの Mac の `~/.android/debug.keystore` なので、別の環境でビルドした APK は上書きできない。
+
    ```bash
    adb install -r app/build/outputs/apk/debug/app-debug.apk
    ```
