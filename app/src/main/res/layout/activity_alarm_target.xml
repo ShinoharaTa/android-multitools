@@ -1,56 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/alarmTargetRoot"
+<!--
+  画面全体を 1 本のリストにする。見出し・設定・検索欄はリストのヘッダー (header_*.xml) に置き、
+  アプリ一覧と一緒にスクロールさせる。上に設定を固定すると、一覧が画面の下に押し込まれるため。
+-->
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/alarmTargetList"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/space_l">
-
-    <TextView
-        style="@style/ScreenTitle"
-        android:text="@string/alarm_target_title" />
-
-    <TextView
-        style="@style/Body"
-        android:text="@string/alarm_target_desc" />
-
-    <TextView
-        android:id="@+id/alarmTargetCurrent"
-        style="@style/StatusLine" />
-
-    <Button
-        android:id="@+id/btnAlarmTargetAuto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/alarm_target_use_auto" />
-
-    <TextView
-        style="@style/CardTitle"
-        android:paddingTop="@dimen/space_l"
-        android:text="@string/config_pick" />
-
-    <EditText
-        android:id="@+id/alarmTargetSearch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/hint_search"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:maxLines="1"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/alarmTargetLoading"
-        style="@style/Body"
-        android:paddingTop="@dimen/space_m"
-        android:text="@string/config_loading" />
-
-    <ListView
-        android:id="@+id/alarmTargetList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:divider="@null"
-        android:dividerHeight="0dp" />
-</LinearLayout>
+    android:clipToPadding="false"
+    android:divider="@null"
+    android:dividerHeight="0dp"
+    android:listSelector="@android:color/transparent"
+    android:paddingHorizontal="@dimen/space_l"
+    android:paddingTop="@dimen/space_l"
+    android:paddingBottom="@dimen/space_l"
+    android:scrollbarStyle="outsideOverlay" />

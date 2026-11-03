@@ -29,6 +29,7 @@ class AppShortcutConfigActivity : Activity() {
     private lateinit var iconSizeSpinner: Spinner
     private lateinit var labelModeSpinner: Spinner
     private lateinit var adapter: AppListAdapter
+    private lateinit var header: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,11 +47,15 @@ class AppShortcutConfigActivity : Activity() {
         }
 
         setContentView(R.layout.activity_shortcut_config)
-        findViewById<View>(R.id.configRoot).padForSystemBars()
-        themeSpinner = findViewById(R.id.shortcutTheme)
-        borderSpinner = findViewById(R.id.shortcutBorder)
-        iconSizeSpinner = findViewById(R.id.shortcutIconSize)
-        labelModeSpinner = findViewById(R.id.shortcutLabelMode)
+        val list = findViewById<ListView>(R.id.shortcutAppList)
+        list.padForSystemBars()
+        // 見出しと見た目の設定はリストのヘッダー。一覧と一緒にスクロールする。
+        header = layoutInflater.inflate(R.layout.header_shortcut_config, list, false)
+        list.addHeaderView(header, null, false)
+        themeSpinner = header.findViewById(R.id.shortcutTheme)
+        borderSpinner = header.findViewById(R.id.shortcutBorder)
+        iconSizeSpinner = header.findViewById(R.id.shortcutIconSize)
+        labelModeSpinner = header.findViewById(R.id.shortcutLabelMode)
 
         // 置き直しのときは今の設定を出しておく。
         val current = AppShortcut.load(this, appWidgetId)
@@ -69,13 +74,13 @@ class AppShortcutConfigActivity : Activity() {
         )
 
         adapter = AppListAdapter(this)
-        val list = findViewById<ListView>(R.id.shortcutAppList)
         list.adapter = adapter
-        list.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            commit(adapter.getItem(position))
+        // ヘッダーがあるので position はヘッダーぶんずれる。リスト側に項目を引かせる。
+        list.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
+            (parent.getItemAtPosition(position) as? ResolveInfo)?.let { commit(it) }
         }
 
-        findViewById<EditText>(R.id.shortcutSearch).addTextChangedListener(
+        header.findViewById<EditText>(R.id.shortcutSearch).addTextChangedListener(
             object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) = adapter.filter(s?.toString().orEmpty())
                 override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) = Unit
@@ -93,7 +98,7 @@ class AppShortcutConfigActivity : Activity() {
             runOnUiThread {
                 if (!isFinishing) {
                     adapter.replaceAll(apps)
-                    findViewById<View>(R.id.shortcutLoading).visibility = View.GONE
+                    header.findViewById<View>(R.id.shortcutLoading).visibility = View.GONE
                 }
             }
         }.start()

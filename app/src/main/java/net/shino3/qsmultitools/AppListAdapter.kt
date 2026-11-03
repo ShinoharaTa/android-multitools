@@ -14,7 +14,7 @@ import android.widget.TextView
  * インストール済みアプリの一覧。ショートカットの設定画面とアラームの開き先の設定画面で共用する。
  *
  * アイコンは表示するぶんだけ読み、一度読んだものは使い回す。
- * [badge] を渡すと、該当するアプリのラベルの後ろに注記を付ける。
+ * [badge] を渡すと、該当するアプリの名前の下に注記を出す。
  */
 class AppListAdapter(
     private val context: Context,
@@ -56,9 +56,12 @@ class AppListAdapter(
         val info = shown[position]
         val component = "${info.activityInfo.packageName}/${info.activityInfo.name}"
 
-        val label = InstalledApps.label(context, info)
-        view.findViewById<TextView>(R.id.appLabel).text =
-            badge(info)?.let { "$label  $it" } ?: label
+        view.findViewById<TextView>(R.id.appLabel).text = InstalledApps.label(context, info)
+        val note = badge(info)
+        view.findViewById<TextView>(R.id.appBadge).apply {
+            text = note
+            visibility = if (note == null) View.GONE else View.VISIBLE
+        }
         view.findViewById<ImageView>(R.id.appIcon).setImageDrawable(
             icons.getOrPut(component) {
                 runCatching { info.loadIcon(context.packageManager) }.getOrNull()

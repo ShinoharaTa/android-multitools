@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- アラームの開き先: リストのヘッダー。今の開き先と「自動に戻す」をカードにまとめる。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/space_s">
+
+    <TextView
+        style="@style/ScreenTitle"
+        android:text="@string/alarm_target_title" />
+
+    <LinearLayout
+        style="@style/Card"
+        android:layout_marginTop="0dp">
+
+        <TextView
+            android:id="@+id/alarmTargetCurrent"
+            style="@style/Lead"
+            android:paddingBottom="@dimen/space_s" />
+
+        <TextView
+            style="@style/Body"
+            android:text="@string/alarm_target_desc" />
+
+        <Button
+            android:id="@+id/btnAlarmTargetAuto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/alarm_target_use_auto" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/CardTitle"
+        android:paddingTop="@dimen/space_xl"
+        android:text="@string/config_pick" />
+
+    <EditText
+        android:id="@+id/alarmTargetSearch"
+        style="@style/SearchField"
+        android:hint="@string/hint_search" />
+
+    <TextView
+        android:id="@+id/alarmTargetLoading"
+        style="@style/Body"
+        android:paddingTop="@dimen/space_m"
+        android:text="@string/config_loading" />
+</LinearLayout>
