@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/space_s"
         android:gravity="center"
-        android:textSize="22sp" />
+        android:textSize="18sp" />
 
     <Button
         style="@style/Button.Tonal.Large"
