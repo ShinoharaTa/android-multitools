@@ -125,8 +125,8 @@ class AppShortcutConfigActivity : Activity() {
     }
 
     private fun fillSpinner(spinner: Spinner, labels: List<String>, selected: Int) {
-        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
-            .apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+        spinner.adapter = ArrayAdapter(this, R.layout.spinner_item, labels)
+            .apply { setDropDownViewResource(R.layout.spinner_dropdown_item) }
         spinner.setSelection(selected, false)
     }
 }

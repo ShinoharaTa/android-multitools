@@ -132,8 +132,8 @@ class AlarmListActivity : Activity() {
 
     private fun bindSpinner(id: Int, labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
         findViewById<Spinner>(id).apply {
-            adapter = ArrayAdapter(this@AlarmListActivity, android.R.layout.simple_spinner_item, labels)
-                .apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            adapter = ArrayAdapter(this@AlarmListActivity, R.layout.spinner_item, labels)
+                .apply { setDropDownViewResource(R.layout.spinner_dropdown_item) }
             setSelection(selected.coerceAtLeast(0), false)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) =
