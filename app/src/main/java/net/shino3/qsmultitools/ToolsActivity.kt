@@ -51,6 +51,10 @@ class ToolsActivity : Activity() {
 
     private lateinit var shortcutStatus: TextView
 
+    private lateinit var xshareStatus: TextView
+    private lateinit var xshareHosts: TextView
+    private lateinit var xshareHint: View
+
     private lateinit var ringStatus: TextView
     private lateinit var ringPermNotifications: TextView
     private lateinit var ringPermFullScreen: TextView
@@ -81,6 +85,16 @@ class ToolsActivity : Activity() {
         widgetStatus = findViewById(R.id.widgetStatus)
         widgetCurrent = findViewById(R.id.widgetCurrent)
         shortcutStatus = findViewById(R.id.shortcutStatus)
+        xshareStatus = findViewById(R.id.xshareStatus)
+        xshareHosts = findViewById(R.id.xshareHosts)
+        xshareHint = findViewById(R.id.xshareHint)
+        findViewById<Button>(R.id.btnXshareSettings).setOnClickListener {
+            if (!start(XShare.openByDefaultSettings(this))) toast("設定画面を開けませんでした")
+        }
+        findViewById<Button>(R.id.btnXshareTest).setOnClickListener {
+            // 実際のリンクと同じく、開き先は Android に選ばせる。設定が済んでいれば共有メニューが出る。
+            start(Intent(Intent.ACTION_VIEW, Uri.parse(XShare.SAMPLE_URL)).addCategory(Intent.CATEGORY_BROWSABLE))
+        }
         ringStatus = findViewById(R.id.ringStatus)
         ringPermNotifications = findViewById(R.id.ringPermNotifications)
         ringPermFullScreen = findViewById(R.id.ringPermFullScreen)
@@ -185,7 +199,21 @@ class ToolsActivity : Activity() {
         // ショートカットも権限を使わないので、常に利用可能。
         render(shortcutStatus, FeatureStatus.AVAILABLE)
 
+        refreshXShare()
+
         refreshRingPermissions()
+    }
+
+    /** X のドメインごとに、このアプリが開き先になっているか。揃うまで設定の案内を出す。 */
+    private fun refreshXShare() {
+        val states = XShare.hostStates(this)
+        val ready = states.values.all { it }
+        render(xshareStatus, if (ready) FeatureStatus.AVAILABLE else FeatureStatus.NEEDS_PERMISSION)
+        if (!ready) xshareStatus.text = getString(R.string.status_bullet, getString(R.string.xshare_needs_setup))
+        xshareHosts.text = states.entries.joinToString("\n") { (host, ok) ->
+            getString(if (ok) R.string.xshare_host_ok else R.string.xshare_host_ng, host)
+        }
+        xshareHint.visibility = if (ready) View.GONE else View.VISIBLE
     }
 
     /**

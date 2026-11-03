@@ -198,4 +198,15 @@
     <string name="timer_screen_hint">ウィジェットの開始ボタンにも同じ候補が並びます。ホーム画面には先頭 4 つまでを出します。</string>
     <string name="alarm_switch_description">アラームの ON/OFF</string>
 
+    <!-- X の共有リンクの横取り -->
+    <string name="section_xshare">X の共有リンクを他の SNS へ</string>
+    <string name="xshare_desc">Web ページなどの「X でポスト」リンクを受け取り、文言を組み立てて Android の共有メニューを開きます。Bluesky など好きなアプリを選んで投稿できます。X に投稿したいときは共有メニューで X を選んでください。投稿やプロフィールなど共有以外の X のリンクは、今までどおり X アプリで開きます。</string>
+    <string name="xshare_needs_setup">設定が必要</string>
+    <string name="xshare_host_ok">%1$s: このアプリで開く</string>
+    <string name="xshare_host_ng">%1$s: 未設定 (X アプリで開く)</string>
+    <string name="xshare_hint">「デフォルトで開く」→「リンクを追加」で x.com と twitter.com を選んでください。X アプリから切り替える確認が出たら、切り替えを選びます。</string>
+    <string name="btn_xshare_settings">「デフォルトで開く」を開く</string>
+    <string name="btn_xshare_test">動作確認 (サンプルの共有リンクを開く)</string>
+    <string name="xshare_open_failed">リンクを開けませんでした</string>
+
 </resources>

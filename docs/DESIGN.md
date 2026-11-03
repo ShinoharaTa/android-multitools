@@ -428,6 +428,28 @@ tint するときは不透明な下地 (`bg_widget_pill`) に差し替えてか�
 初回の投稿なのに「鳴らさない通知」として扱われていた。外したら元どおり画面が点いて鳴動画面が開く。
 出し直しで再アラートしても、全画面インテントは表示中なら二重には開かないので実害はない。
 
+## 9.5 X の共有リンクの横取り
+
+Web ページの「X でポスト」ボタンは、X 専用の仕組みではなく `https://twitter.com/intent/tweet?text=…&url=…` を開いているだけ。
+ここに来る文言を Android の共有メニュー (ACTION_SEND, text/plain) に渡し直す。専用の画面は作らず、Web の Share ボタン
+(`navigator.share`) と同じ振る舞いにした。共有先の選び方を自前で持たずに済み、X も共有メニューに出るので逃げ道が残る。
+
+**受け口は画面を持たない** (`XShareActivity`, `Theme.NoDisplay`)。受け取ったら次の Activity を開いてすぐ閉じる。
+
+**開き先はユーザーに選んでもらう。** `x.com` / `twitter.com` は X アプリが App Links で確認済みの開き先になっている
+(Android 12 以降)。このアプリはドメインの持ち主ではないので `autoVerify` は通らない。ユーザーが「デフォルトで開く」で
+ドメインを選ぶと (`DOMAIN_STATE_SELECTED`)、そこで初めてこのアプリに来る。状態は `DomainVerificationManager` で読み、
+設定画面は `ACTION_APP_OPEN_BY_DEFAULT_SETTINGS` で直接開く。エミュレータでは
+`pm set-app-links-user-selection` で同じ状態にして確かめた。
+
+**共有以外のリンクも受けて渡し直す。** ドメインをこのアプリに切り替えると、投稿やプロフィールのリンクも X アプリでは
+開かなくなる (確認済みの開き先でなくなった X は選ばれず、ブラウザに回る)。そこで intent-filter はパスで絞らずに
+X のリンクをすべて受け、共有以外は `setPackage("com.twitter.android")` で X を明示して渡す。パッケージを指定した
+Intent は確認済みかどうかに関係なく開ける。X が無ければ既定のブラウザを明示する。明示しないと自分に戻ってくる。
+
+組み立ては X の投稿画面と同じ順で `本文 URL #タグ via @via`。`hashtags` はカンマ区切り。本文に URL が含まれていれば重ねない。
+古い形式の `/home?status=` も受ける。`related` など投稿文に関係しないパラメータは捨てる。
+
 ## 10. デザインテーマ
 
 凝ったものにはしない。システムの部品と色をそのまま使い、決まった数の値だけで組む。
@@ -536,6 +558,8 @@ app/src/main/
 │   ├── TimerActivity.kt         タイマー画面
 │   ├── TimerPanel.kt            タイマーの操作パネル (ホームとタイマー画面で共用)
 │   ├── RingPermissions.kt       鳴動に必要な 3 つの許可の判定
+│   ├── XShare.kt                X の共有リンクの解析と組み立て、渡し直し先、ドメインの状態
+│   ├── XShareActivity.kt        X のリンクの受け口 (画面なし)
 │   └── ToolsActivity.kt         ツールと設定 (旧セットアップ画面)
 └── res/                         XML レイアウト、vector drawable、文字列
 ```
