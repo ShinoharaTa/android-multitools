@@ -30,7 +30,7 @@
             android:padding="@dimen/space_l"
             android:text="@string/home_perm_banner"
             android:textColor="@color/status_warn"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:visibility="gone" />
 
         <!-- アラーム -->

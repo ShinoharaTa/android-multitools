@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- スピナーの選択中の表示。Android 標準 (約 18sp) ではなく、周りの文字に合わせて Lead (16sp)。 -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    style="@style/Lead"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:paddingTop="@dimen/space_s"
+    android:paddingBottom="@dimen/space_s" />

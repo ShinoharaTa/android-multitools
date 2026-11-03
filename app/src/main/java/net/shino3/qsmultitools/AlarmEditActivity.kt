@@ -124,7 +124,7 @@ class AlarmEditActivity : Activity() {
                 AlarmScheduler.delete(this, alarm.id)
                 finish()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.timer_cancel, null)
             .show()
     }
 

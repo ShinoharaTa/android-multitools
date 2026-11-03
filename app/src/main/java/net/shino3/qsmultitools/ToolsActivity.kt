@@ -312,8 +312,8 @@ class ToolsActivity : Activity() {
     ) {
         val labels = values.map { getString(labelOf(it)) }
         findViewById<Spinner>(spinnerId).apply {
-            adapter = ArrayAdapter(this@ToolsActivity, android.R.layout.simple_spinner_item, labels)
-                .apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            adapter = ArrayAdapter(this@ToolsActivity, R.layout.spinner_item, labels)
+                .apply { setDropDownViewResource(R.layout.spinner_dropdown_item) }
             setSelection(values.indexOf(selected), false)
             // リスナーは初期選択を入れ終わってから付ける。付けてから setSelection すると
             // 画面を開いた瞬間に保存が走ってしまう。

@@ -72,9 +72,9 @@ class TimerActivity : Activity() {
         findViewById<Spinner>(R.id.spinnerRingMode).apply {
             adapter = ArrayAdapter(
                 this@TimerActivity,
-                android.R.layout.simple_spinner_item,
+                R.layout.spinner_item,
                 modes.map { getString(it.labelRes) },
-            ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            ).apply { setDropDownViewResource(R.layout.spinner_dropdown_item) }
             setSelection(modes.indexOf(TimerSettings.ringMode(this@TimerActivity)), false)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {

@@ -69,12 +69,14 @@
                     android:id="@+id/btnAllowFullScreen"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
                     android:text="@string/btn_allow_full_screen" />
 
                 <Button
                     android:id="@+id/btnAllowBattery"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
                     android:text="@string/btn_allow_battery" />
             </LinearLayout>
         </LinearLayout>
@@ -219,6 +221,7 @@
                 android:id="@+id/btnTestAlarm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
                 android:text="@string/btn_test" />
         </LinearLayout>
 
@@ -338,12 +341,14 @@
                 <Button
                     android:id="@+id/btnAddTileTimeout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs" />
 
                 <Button
                     android:id="@+id/btnAddTileAlarm"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs" />
             </LinearLayout>
         </LinearLayout>
 
