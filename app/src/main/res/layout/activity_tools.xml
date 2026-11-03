@@ -314,6 +314,44 @@
                 android:text="@string/btn_add_shortcut" />
         </LinearLayout>
 
+        <!-- X の共有リンクの横取り (Issue #16) -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:text="@string/section_xshare" />
+
+            <TextView
+                android:id="@+id/xshareStatus"
+                style="@style/StatusLine" />
+
+            <TextView
+                style="@style/Body"
+                android:text="@string/xshare_desc" />
+
+            <TextView
+                android:id="@+id/xshareHosts"
+                style="@style/Body" />
+
+            <TextView
+                android:id="@+id/xshareHint"
+                style="@style/Body"
+                android:text="@string/xshare_hint" />
+
+            <Button
+                android:id="@+id/btnXshareSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_xshare_settings" />
+
+            <Button
+                android:id="@+id/btnXshareTest"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/btn_xshare_test" />
+        </LinearLayout>
+
         <!-- タイル追加 -->
         <LinearLayout style="@style/Card">
 
