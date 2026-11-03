@@ -56,6 +56,13 @@
         </intent>
         <package android:name="com.sec.android.app.clockpackage" />
         <package android:name="com.google.android.deskclock" />
+        <!-- X の共有以外のリンクを渡し直す先 (X アプリ、無ければブラウザ)。 -->
+        <package android:name="com.twitter.android" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
     </queries>
 
     <application
@@ -281,5 +288,32 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_alarm_list_info" />
         </receiver>
+
+        <!--
+          X のリンクの受け口 (Issue #16)。共有リンクは共有メニューへ、それ以外は X アプリへ渡し直す。
+          autoVerify は付けない (このドメインの持ち主ではないので確認は通らない)。端末の設定
+          「デフォルトで開く」でユーザーにドメインを選んでもらって初めてここに来る。
+          パスで絞らないのは、選ばれたドメインのリンクがすべてここに来るため。共有以外も受けて渡し直す。
+        -->
+        <activity
+            android:name=".XShareActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:scheme="http" />
+                <data android:host="x.com" />
+                <data android:host="www.x.com" />
+                <data android:host="twitter.com" />
+                <data android:host="www.twitter.com" />
+                <data android:host="mobile.twitter.com" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>
